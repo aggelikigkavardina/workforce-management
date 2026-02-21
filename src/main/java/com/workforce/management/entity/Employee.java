@@ -6,12 +6,11 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+@Entity
+@Table(name = "employees")
 @Getter
 @Setter
 @NoArgsConstructor
-@AllArgsConstructor
-@Entity
-@Table(name = "employees")
 public class Employee {
 
     @Id
@@ -24,6 +23,10 @@ public class Employee {
     @Column(name = "last_name")
     private String lastName;
 
-    @Column(name = "email_id", nullable = false, unique = true)
+    @Column(name = "email_id",nullable = false ,unique = true)
     private String email;
+
+    @OneToOne(mappedBy = "employee", cascade = CascadeType.ALL)
+    @JoinColumn(name = "user_id")
+    private User user;
 }
