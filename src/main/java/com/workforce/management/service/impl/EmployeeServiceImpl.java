@@ -9,10 +9,10 @@ import com.workforce.management.mapper.EmployeeMapper;
 import com.workforce.management.repository.EmployeeRepository;
 import com.workforce.management.repository.UserRepository;
 import com.workforce.management.service.EmployeeService;
-import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -39,10 +39,13 @@ public class EmployeeServiceImpl implements EmployeeService {
 
         User user = new User();
         user.setUsername(savedEmployee.getEmail());
-        user.setPassword(
-                passwordEncoder.encode("default123"));
+        if (dto.getPassword() == null || dto.getPassword().trim().isEmpty()) {
+            throw new RuntimeException("Password is required");
+        }
+        user.setPassword(passwordEncoder.encode(dto.getPassword()));
         user.setRole(Role.ROLE_EMPLOYEE);
         user.setEmployee(savedEmployee);
+        savedEmployee.setUser(user);
 
         userRepository.save(user);
 
@@ -63,18 +66,17 @@ public class EmployeeServiceImpl implements EmployeeService {
         return EmployeeMapper.mapToEmployeeDto(employee);
     }
 
-    @Override public List<EmployeeDto> getAllEmployees() {
-        List<Employee> employees = employeeRepository.findAll();
-        return employees.stream().map((employee) ->
-                EmployeeMapper.mapToEmployeeDto(employee))
+    @Override
+    public List<EmployeeDto> getAllEmployees() {
+        return employeeRepository.findAll().stream()
+                .filter(e -> e.getEmail() == null || !e.getEmail().equalsIgnoreCase("admin@gmail.com"))
+                .map(EmployeeMapper::mapToEmployeeDto)
                 .collect(Collectors.toList());
     }
 
     @Override
     @Transactional
-    public EmployeeDto updateEmployee(
-            Long employeeId,
-            EmployeeDto updatedDto) {
+    public EmployeeDto updateEmployee(Long employeeId, EmployeeDto updatedDto) {
 
         Employee employee =
                 employeeRepository.findById(employeeId)
@@ -85,11 +87,27 @@ public class EmployeeServiceImpl implements EmployeeService {
         employee.setLastName(updatedDto.getLastName());
         employee.setEmail(updatedDto.getEmail());
 
-        employee.getUser()
-                .setUsername(updatedDto.getEmail());
+        User user = employee.getUser();
 
-        Employee updated =
-                employeeRepository.save(employee);
+        if (user == null) {
+            if (userRepository.existsByUsername(updatedDto.getEmail())) {
+                throw new RuntimeException("User already exists");
+            }
+
+            user = new User();
+            user.setUsername(updatedDto.getEmail());
+            user.setRole(Role.ROLE_EMPLOYEE);
+            user.setEmployee(employee);
+            employee.setUser(user);
+        } else {
+            user.setUsername(updatedDto.getEmail());
+        }
+        if (updatedDto.getPassword() != null && !updatedDto.getPassword().trim().isEmpty()) {
+            user.setPassword(passwordEncoder.encode(updatedDto.getPassword()));
+        }
+
+        Employee updated = employeeRepository.save(employee);
+        userRepository.save(user);
 
         return EmployeeMapper.mapToEmployeeDto(updated);
     }
@@ -100,10 +118,13 @@ public class EmployeeServiceImpl implements EmployeeService {
 
         Employee employee =
                 employeeRepository.findById(employeeId)
-                        .orElseThrow(() ->
-                                new ResourceNotFoundException("Not found"));
+                        .orElseThrow(() -> new ResourceNotFoundException("Not found"));
 
-        userRepository.delete(employee.getUser());
+        User user = employee.getUser();
+        if (user != null) {
+            userRepository.delete(user);
+        }
+
         employeeRepository.delete(employee);
     }
 }

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { createEmployee, getEmployee, updateEmployee } from '../services/EmployeeService'
 import { useNavigate, useParams } from 'react-router-dom'
 
@@ -7,13 +7,15 @@ const EmployeeComponent = () => {
     const [firstName, setFirstName] = useState('')
     const [lastName, setLastName] = useState('')
     const [email, setEmail] = useState('')
+    const [password, setPassword] = useState('')
 
     const {id} = useParams();
 
     const [errors, setErrors] = useState({
         firstName: '',
         lastName: '',
-        email: ''
+        email: '',
+        password: ''
     })
 
     const navigator = useNavigate();
@@ -38,6 +40,9 @@ const EmployeeComponent = () => {
         if(validateForm()) {
 
             const employee = {firstName, lastName, email}
+            if (password.trim()) {
+                employee.password = password;
+}
             console.log(employee)
 
             if(id) {
@@ -84,6 +89,13 @@ const EmployeeComponent = () => {
             valid = false;
         }
 
+        if(password.trim()) {
+            errorsCopy.password = '';
+        } else {
+            errorsCopy.password = 'Password is required';
+            valid = false;
+        }
+
         setErrors(errorsCopy);
 
         return valid;
@@ -91,11 +103,14 @@ const EmployeeComponent = () => {
 
     function pageTitle() {
         if(id) {
-            return <h2 className='text-center'>Update Employee</h2>
+            return <h2 className='text-center' style={{ marginTop: '10px' }}>Update Employee</h2>
         } else {
-            <h2 className='text-center'>Add Employee</h2>
+            return <h2 className='text-center' style={{ marginTop: '10px' }}>Add Employee</h2>
         }
+    }
 
+    function goBack() {
+        navigator('/employees');
     }
 
   return (
@@ -147,7 +162,22 @@ const EmployeeComponent = () => {
                             </input>
                             {errors.email && <div className='invalid-feedback'> {errors.email} </div>}
                         </div>
-                        <button className='btn btn-success' onClick={saveOrUpdateEmployee}>Submit</button>
+                        <div className='form-group mb-2'>
+                            <label className='form-label'>New Password:</label>
+                            <input
+                                type='password'
+                                placeholder='Leave blank to keep current password'
+                                name='password'
+                                value={password}
+                                className={`form-control ${ errors.password ? 'is-invalid': ''}`}
+                                onChange={(e) => setPassword(e.target.value)}
+                            />
+                            </div>
+                            {errors.password && <div className='invalid-feedback'> {errors.password} </div>}
+                        <div className='d-flex justify-content-between' style={{marginTop: '10px'}}>
+                            <button type='button' className='btn btn-secondary' onClick={goBack}>Back</button>
+                            <button type='button' className='btn btn-success' onClick={saveOrUpdateEmployee} >Submit</button>
+                        </div>
                     </form>
                 </div>
             </div>

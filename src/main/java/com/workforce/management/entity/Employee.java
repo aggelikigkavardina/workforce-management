@@ -1,7 +1,6 @@
 package com.workforce.management.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -26,7 +25,6 @@ public class Employee {
     @Column(name = "email_id",nullable = false ,unique = true)
     private String email;
 
-    @OneToOne(mappedBy = "employee", cascade = CascadeType.ALL)
-    @JoinColumn(name = "user_id")
+    @OneToOne(mappedBy = "employee", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private User user;
 }
