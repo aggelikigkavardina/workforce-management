@@ -10,7 +10,7 @@ import lombok.Setter;
 public class LoginDto {
 
     @NotBlank
-    @Email
+    @Email(message = "Username must be a valid email")
     private String username;
 
     @NotBlank

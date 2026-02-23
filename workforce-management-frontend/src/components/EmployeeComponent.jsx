@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { createEmployee, getEmployee, updateEmployee } from '../services/EmployeeService'
 import { useNavigate, useParams } from 'react-router-dom'
+import { isValidEmail, isValidPassword } from '../helpers/ValidationHelper'
 
 const EmployeeComponent = () => {
 
@@ -39,7 +40,8 @@ const EmployeeComponent = () => {
 
         if(validateForm()) {
 
-            const employee = {firstName, lastName, email}
+            const employee = {id: Number(id), firstName, lastName, email}
+
             if (password.trim()) {
                 employee.password = password;
 }
@@ -50,14 +52,16 @@ const EmployeeComponent = () => {
                     console.log(response.data);
                     navigator('/employees')
                 }).catch(error => {
-                    console.error(error);
+                    console.log('STATUS:', error?.response?.status);
+                    console.log('DATA:', JSON.stringify(error?.response?.data, null, 2));
                 })
             } else {
                 createEmployee(employee).then((response) => {
                 console.log(response.data);
                 navigator('/employees')
                 }).catch(error => {
-                    console.error(error);
+                    console.log('STATUS:', error?.response?.status);
+                    console.log('DATA:', JSON.stringify(error?.response?.data, null, 2));
                 })
             }
         }   
@@ -68,32 +72,54 @@ const EmployeeComponent = () => {
 
         const errorsCopy = {... errors}
 
-        if(firstName.trim()) {
-            errorsCopy.firstName = '';
-        } else {
+        if(!firstName.trim()) {
             errorsCopy.firstName = 'First name is required';
             valid = false;
+        } else if (firstName.length > 50) {
+            errorsCopy.firstName = "Max 50 characters";
+            valid = false;
+        } else {
+            errorsCopy.firstName = '';        
         }
 
-        if(lastName.trim()) {
-            errorsCopy.lastName = '';
-        } else {
+        if(!lastName.trim()) {
             errorsCopy.lastName = 'Last name is required';
             valid = false;
+        } else if (lastName.length > 50) {
+            errorsCopy.lastName = 'Max 50 characters';
+            valid = false;
+        } else {
+            errorsCopy.lastName = '';        
         }
 
-        if(email.trim()) {
-            errorsCopy.email = '';
-        } else {
+        if(!email.trim()) {
             errorsCopy.email = 'Email is required';
             valid = false;
+        } else if (!isValidEmail(email)) {
+            errorsCopy.email = 'Invalid email format';
+            valid = false;
+        } else if (email.length > 120) {
+            errorsCopy.email = 'Max 120 characters';
+            valid = false;
+        } else {
+            errorsCopy.email = '';        
         }
 
-        if(password.trim()) {
-            errorsCopy.password = '';
-        } else {
+        if (!id) {
+            if(!password.trim()) {
             errorsCopy.password = 'Password is required';
             valid = false;
+            } else if (!isValidPassword(password)) {
+                errorsCopy.password = 'Password must be 6-64 characters';
+                valid = false;
+            } else {
+                errorsCopy.password = '';        
+            }
+        } else {
+            if (password.trim()  && !isValidPassword(password)) {
+                errorsCopy.password = 'Password must be 6-64 characters';
+                valid = false;
+            }
         }
 
         setErrors(errorsCopy);
@@ -172,8 +198,8 @@ const EmployeeComponent = () => {
                                 className={`form-control ${ errors.password ? 'is-invalid': ''}`}
                                 onChange={(e) => setPassword(e.target.value)}
                             />
-                            </div>
                             {errors.password && <div className='invalid-feedback'> {errors.password} </div>}
+                            </div>
                         <div className='d-flex justify-content-between' style={{marginTop: '10px'}}>
                             <button type='button' className='btn btn-secondary' onClick={goBack}>Back</button>
                             <button type='button' className='btn btn-success' onClick={saveOrUpdateEmployee} >Submit</button>

@@ -5,6 +5,7 @@ import com.workforce.management.dto.LoginDto;
 import com.workforce.management.entity.User;
 import com.workforce.management.repository.UserRepository;
 import com.workforce.management.security.JwtTokenProvider;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -23,7 +24,7 @@ public class AuthController {
     private final UserRepository userRepository;
 
     @PostMapping("/login")
-    public ResponseEntity<JwtAuthResponse> login(@RequestBody LoginDto loginDto) {
+    public ResponseEntity<JwtAuthResponse> login(@Valid @RequestBody LoginDto loginDto) {
 
         Authentication authentication =
                 authenticationManager.authenticate(

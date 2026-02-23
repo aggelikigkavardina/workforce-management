@@ -45,6 +45,7 @@ const ListEmployeeComponent = () => {
 
   return (
     <div className='container'>
+      <br /><br />
       <h2 className='text-center'>List of Employees</h2>
 
       {loadError && (

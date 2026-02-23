@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { loginAPICall, saveToken, saveLoggedInUser } from '../../services/AuthService'
 import { useNavigate } from 'react-router-dom'
+import { isValidEmail, isValidPassword } from '../../helpers/ValidationHelper'
 
 const LoginComponent = () => {
 
@@ -32,9 +33,10 @@ const LoginComponent = () => {
           } else {
             navigator('/profile')
           }
-        })
-        .catch(error => {
-          console.error(error)
+        }).catch(error => {
+            console.log('LOGIN ERROR:', {
+              status: error?.response?.status,
+              data: error?.response?.data});
         })
     }
 
@@ -43,18 +45,24 @@ const LoginComponent = () => {
 
       const errorsCopy = {... errors}
 
-      if(username.trim()) {
-          errorsCopy.username = '';
-      } else {
+      if(!username.trim()) {
           errorsCopy.username = 'Email is required';
-          valid = false;
+           valid = false;
+      } else if (!isValidEmail(username)) {
+          errorsCopy.username = 'Invalid email format';
+           valid = false;
+      } else {
+          errorsCopy.username = '';
       }
 
-    if(password.trim()) {
-          errorsCopy.password = '';
-      } else {
+      if(!password.trim()) {
           errorsCopy.password = 'Password is required';
-          valid = false;
+           valid = false;
+      } else if (!isValidPassword(password)) {
+          errorsCopy.password = 'Password must be 6-64 character';
+           valid = false;
+      } else {
+          errorsCopy.password = '';
       }
 
       setErrors(errorsCopy);
