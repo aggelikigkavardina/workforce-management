@@ -44,6 +44,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/employees/me").hasRole("EMPLOYEE")
+                        .requestMatchers(HttpMethod.GET, "/api/shifts/my").hasRole("EMPLOYEE")
+                        .requestMatchers("/api/shifts/**").hasRole("ADMIN")
 
                         // everything else requires auth
                         .anyRequest().authenticated()
