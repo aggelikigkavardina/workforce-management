@@ -24,11 +24,14 @@ const LoginComponent = () => {
 
           const token = response.data.accessToken
           const role = response.data.role
+          const mustChange = response.data.mustChangePassword
 
           saveToken(token)
-          saveLoggedInUser(username, role)
+          saveLoggedInUser(username, role, mustChange)
 
-          if (role === 'ROLE_ADMIN') {
+          if (role === 'ROLE_EMPLOYEE' && mustChange) {
+            navigator('/change-password')
+          } else if (role === 'ROLE_ADMIN') {
             navigator('/employees')
           } else {
             navigator('/profile')
@@ -76,7 +79,7 @@ const LoginComponent = () => {
       <br /><br />
       <div className='row'>
         <div className='card col-md-6 offset-md-3'>
-          <h3 className='text-center mt-3'>Login</h3>
+          <h3 className='text-center mt-3'>Sign in</h3>
           <div className='card-body'>
             <form onSubmit={handleSubmit}>
               <div className='form-group mb-2'>
@@ -101,7 +104,7 @@ const LoginComponent = () => {
                   className={`form-control ${ errors.password ? 'is-invalid': ''}`}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  autoComplete="current-password"
+                  autoComplete='current-password'
                 />
                 {errors.password && <div className='invalid-feedback'> {errors.password} </div>}
               </div>

@@ -1,12 +1,13 @@
 package com.workforce.management.service;
 
+import com.workforce.management.dto.EmployeeCreateResponse;
 import com.workforce.management.dto.EmployeeDto;
 
 import java.util.List;
 
 public interface EmployeeService {
 
-    EmployeeDto createEmployee(EmployeeDto employeeDto);
+    EmployeeCreateResponse createEmployee(EmployeeDto employeeDto);
 
     EmployeeDto getEmployeeById(Long employeeId);
 

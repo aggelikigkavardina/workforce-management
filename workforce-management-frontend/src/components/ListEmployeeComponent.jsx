@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { deleteEmployee, listEmployees } from '../services/EmployeeService';
 import { isAdminUser } from '../services/AuthService';
+import { Eye, Pencil, Trash2 } from 'lucide-react';
 
 const ListEmployeeComponent = () => {
   const [employees, setEmployees] = useState([]);
@@ -43,6 +44,10 @@ const ListEmployeeComponent = () => {
       });
   }
 
+  function viewEmployeeDetails(id) {
+    navigator(`/employees/${id}`);
+  }
+
   return (
     <div className='container'>
       <br /><br />
@@ -60,36 +65,59 @@ const ListEmployeeComponent = () => {
         </button>
       )}
 
-      <table className='table table-striped table-bordered'>
+      <table className='table table-striped table-bordered table-hover align-middle'>
         <thead>
           <tr>
-            <th>Employee Id</th>
             <th>First Name</th>
             <th>Last Name</th>
             <th>Email</th>
+            <th>Phone</th>
             {isAdminUser() && <th>Actions</th>}
           </tr>
         </thead>
         <tbody>
           {employees.map((employee) => (
-            <tr key={employee.id}>
-              <td>{employee.id}</td>
+            <tr key={employee.id}
+              style={{ cursor: 'pointer' }}
+              onClick={() => viewEmployeeDetails(employee.id)}
+            >
               <td>{employee.firstName}</td>
               <td>{employee.lastName}</td>
               <td>{employee.email}</td>
+              <td>{null}</td>
 
               {isAdminUser() && (
-                <td>
-                  <button className='btn btn-info' onClick={() => updateEmployee(employee.id)}>
-                    Update
-                  </button>
-                  <button
-                    className='btn btn-danger'
-                    onClick={() => removeEmployee(employee.id)}
-                    style={{ marginLeft: '10px' }}
-                  >
-                    Delete
-                  </button>
+                <td
+                  style={{ width: '1%', whiteSpace: 'nowrap' }}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div className='d-flex gap-2'>
+
+                    <button
+                      className='btn btn-link text-secondary p-0'
+                      onClick={() => viewEmployeeDetails(employee.id)}
+                      title='View Details'
+                    >
+                      <Eye size={16} />
+                    </button>
+
+                    <button
+                      className='btn btn-link text-primary p-0'
+                      onClick={() => updateEmployee(employee.id)}
+                      title='Edit Employee'
+                    >
+                      <Pencil size={16} />
+                    </button>
+
+                    <button
+                      className='btn btn-link text-danger p-0'
+                      onClick={() => removeEmployee(employee.id)}
+                      title='Delete Employee'
+                    >
+                      <Trash2 size={16} />
+                    </button>
+
+                  </div>
                 </td>
               )}
             </tr>

@@ -40,11 +40,13 @@ const EmployeeComponent = () => {
 
         if(validateForm()) {
 
-            const employee = {id: Number(id), firstName, lastName, email}
+            const employee = {firstName, lastName, email}
 
-            if (password.trim()) {
+            if (id) employee.id = Number(id);
+
+            if (id && password.trim()) {
                 employee.password = password;
-}
+            }
             console.log(employee)
 
             if(id) {
@@ -57,6 +59,8 @@ const EmployeeComponent = () => {
                 })
             } else {
                 createEmployee(employee).then((response) => {
+                const temp = response.data.temporaryPassword;
+                alert(`Temporary password for employee: ${temp}`);
                 console.log(response.data);
                 navigator('/employees')
                 }).catch(error => {
@@ -76,7 +80,7 @@ const EmployeeComponent = () => {
             errorsCopy.firstName = 'First name is required';
             valid = false;
         } else if (firstName.length > 50) {
-            errorsCopy.firstName = "Max 50 characters";
+            errorsCopy.firstName = 'Max 50 characters';
             valid = false;
         } else {
             errorsCopy.firstName = '';        
@@ -105,21 +109,17 @@ const EmployeeComponent = () => {
             errorsCopy.email = '';        
         }
 
-        if (!id) {
-            if(!password.trim()) {
-            errorsCopy.password = 'Password is required';
-            valid = false;
-            } else if (!isValidPassword(password)) {
+        if (id) {
+            // Password validation: ONLY on update
+            if (password.trim() && !isValidPassword(password)) {
                 errorsCopy.password = 'Password must be 6-64 characters';
                 valid = false;
             } else {
-                errorsCopy.password = '';        
+                errorsCopy.password = '';
             }
-        } else {
-            if (password.trim()  && !isValidPassword(password)) {
-                errorsCopy.password = 'Password must be 6-64 characters';
-                valid = false;
-            }
+            } else {
+            // create: no password field used
+            errorsCopy.password = '';
         }
 
         setErrors(errorsCopy);
@@ -188,18 +188,20 @@ const EmployeeComponent = () => {
                             </input>
                             {errors.email && <div className='invalid-feedback'> {errors.email} </div>}
                         </div>
-                        <div className='form-group mb-2'>
-                            <label className='form-label'>New Password:</label>
-                            <input
+                        {id && (
+                            <div className='form-group mb-2'>
+                                <label className='form-label'>New Password:</label>
+                                <input
                                 type='password'
                                 placeholder='Leave blank to keep current password'
                                 name='password'
                                 value={password}
                                 className={`form-control ${ errors.password ? 'is-invalid': ''}`}
                                 onChange={(e) => setPassword(e.target.value)}
-                            />
-                            {errors.password && <div className='invalid-feedback'> {errors.password} </div>}
+                                />
+                                {errors.password && <div className='invalid-feedback'>{errors.password}</div>}
                             </div>
+                        )}
                         <div className='d-flex justify-content-between' style={{marginTop: '10px'}}>
                             <button type='button' className='btn btn-secondary' onClick={goBack}>Back</button>
                             <button type='button' className='btn btn-success' onClick={saveOrUpdateEmployee} >Submit</button>

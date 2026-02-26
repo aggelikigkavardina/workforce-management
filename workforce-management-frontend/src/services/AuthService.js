@@ -16,9 +16,10 @@ export const getToken = () => {
     return localStorage.getItem('token');
 };
 
-export const saveLoggedInUser = (username, role) => {
+export const saveLoggedInUser = (username, role, mustChangePassword) => {
     localStorage.setItem('authenticatedUser', username);
     localStorage.setItem('role', role);
+    localStorage.setItem('mustChangePassword', String(!!mustChangePassword));
 };
 
 export const getLoggedInUser = () => {
@@ -45,3 +46,5 @@ export const isUserLoggedIn = () => !!getToken();
 
 export const logoutAPICall = () =>
   axios.post('http://localhost:8080/api/auth/logout');
+
+export const mustChangePassword = () => localStorage.getItem('mustChangePassword') === 'true';

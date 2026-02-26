@@ -1,6 +1,5 @@
 package com.workforce.management.dto;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.workforce.management.validation.OnCreate;
 import com.workforce.management.validation.OnUpdate;
 import jakarta.validation.constraints.Email;
@@ -32,8 +31,8 @@ public class EmployeeDto {
     @Size(max = 120, groups = {OnCreate.class, OnUpdate.class}, message = "Email must be <= 120 characters")
     private String email;
 
-    @NotBlank(groups = OnCreate.class, message = "Password is required")
+    @NotBlank(groups = OnUpdate.class, message = "Password is required")
     @Size(min = 6, max = 64, groups = OnCreate.class, message = "Password must be 6-64 characters")
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    //@JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
 }

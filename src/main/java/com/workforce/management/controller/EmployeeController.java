@@ -1,11 +1,11 @@
 package com.workforce.management.controller;
 
+import com.workforce.management.dto.EmployeeCreateResponse;
 import com.workforce.management.dto.EmployeeDto;
 import com.workforce.management.service.EmployeeService;
 import com.workforce.management.validation.OnCreate;
 import com.workforce.management.validation.OnUpdate;
 import lombok.AllArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
@@ -22,9 +22,9 @@ public class EmployeeController {
 
     // Build Add Employee REST API
     @PostMapping
-    public ResponseEntity<EmployeeDto> createEmployee(@Validated(OnCreate.class) @RequestBody EmployeeDto employeeDto) {
-        EmployeeDto savedEmployee = employeeService.createEmployee(employeeDto);
-        return new ResponseEntity<>(savedEmployee, HttpStatus.CREATED);
+    public ResponseEntity<EmployeeCreateResponse> createEmployee(@Validated(OnCreate.class) @RequestBody EmployeeDto employeeDto) {
+        EmployeeCreateResponse response = employeeService.createEmployee(employeeDto);
+        return ResponseEntity.ok(response);
     }
 
     // Build Get Employee REST API

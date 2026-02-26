@@ -27,6 +27,8 @@ public class User {
     @Enumerated(EnumType.STRING)
     private Role role;
 
+    private boolean mustChangePassword = false;
+
     @OneToOne
     @JoinColumn(name = "employee_id", nullable = false, unique = true)
     private Employee employee;

@@ -54,7 +54,6 @@ public class ShiftServiceImpl implements ShiftService {
         shift.setEndAt(dto.getEndAt());
         shift.setNotes(dto.getNotes());
 
-        // (optional) allow changing employee on update
         if (dto.getEmployeeId() != null && !dto.getEmployeeId().equals(shift.getEmployee().getId())) {
             Employee employee = employeeRepository.findById(dto.getEmployeeId())
                     .orElseThrow(() -> new ResourceNotFoundException("Employee not found"));

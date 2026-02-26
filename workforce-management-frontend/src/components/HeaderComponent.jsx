@@ -45,12 +45,12 @@ const HeaderComponent = () => {
                 </NavLink>
 
                 <NavLink
-                  to='/schedule'
+                  to='/shifts'
                   className={({ isActive }) =>
                     'nav-link ' + (isActive ? 'text-warning' : 'text-light')
                   }
                 >
-                  Schedule
+                  Shift
                 </NavLink>
 
                 <NavLink
@@ -65,16 +65,28 @@ const HeaderComponent = () => {
             )}
 
             {isEmployeeUser() && (
-              <NavLink
-                to='/profile'
-                className={({ isActive }) =>
-                  'nav-link ' + (isActive ? 'text-warning' : 'text-light')
-                }
-              >
-                My Profile
-              </NavLink>
+              <>
+                <NavLink
+                  to='/profile'
+                  className={({ isActive }) =>
+                    'nav-link ' + (isActive ? 'text-warning' : 'text-light')
+                  }
+                >
+                  My Profile
+                </NavLink>
+
+                <NavLink
+                  to='/my-shifts'
+                  className={({ isActive }) =>
+                    'nav-link ' + (isActive ? 'text-warning' : 'text-light')
+                  }
+                >
+                  Shifts
+                </NavLink>
+              </>
             )}
           </div>
+         
         )}
 
         <div className='ms-auto'>
