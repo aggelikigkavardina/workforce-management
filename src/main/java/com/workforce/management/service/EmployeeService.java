@@ -2,6 +2,7 @@ package com.workforce.management.service;
 
 import com.workforce.management.dto.EmployeeCreateResponse;
 import com.workforce.management.dto.EmployeeDto;
+import com.workforce.management.dto.EmployeeProfileUpdateDto;
 
 import java.util.List;
 
@@ -18,4 +19,8 @@ public interface EmployeeService {
     EmployeeDto updateEmployee(Long employeeId, EmployeeDto updatedEmployee);
 
     void deleteEmployee(Long employeeId);
+
+    EmployeeDto updateMyProfile(String username, EmployeeProfileUpdateDto dto);
+
+    String adminResetEmployeePassword(Long employeeId);
 }

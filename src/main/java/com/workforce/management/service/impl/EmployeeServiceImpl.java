@@ -2,9 +2,11 @@ package com.workforce.management.service.impl;
 
 import com.workforce.management.dto.EmployeeCreateResponse;
 import com.workforce.management.dto.EmployeeDto;
+import com.workforce.management.dto.EmployeeProfileUpdateDto;
 import com.workforce.management.entity.Employee;
 import com.workforce.management.entity.Role;
 import com.workforce.management.entity.User;
+import com.workforce.management.exception.ConflictException;
 import com.workforce.management.exception.ResourceNotFoundException;
 import com.workforce.management.mapper.EmployeeMapper;
 import com.workforce.management.repository.EmployeeRepository;
@@ -32,7 +34,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     public EmployeeCreateResponse createEmployee(EmployeeDto dto) {
 
         if (userRepository.existsByUsername(dto.getEmail())) {
-            throw new RuntimeException("User already exists");
+            throw new ConflictException("User already exists");
         }
 
         Employee employee = EmployeeMapper.mapToEmployee(dto);
@@ -95,7 +97,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 
         if (user == null) {
             if (userRepository.existsByUsername(updatedDto.getEmail())) {
-                throw new RuntimeException("User already exists");
+                throw new ConflictException("User already exists");
             }
 
             user = new User();
@@ -130,5 +132,41 @@ public class EmployeeServiceImpl implements EmployeeService {
         }
 
         employeeRepository.delete(employee);
+    }
+
+    @Override
+    @Transactional
+    public EmployeeDto updateMyProfile(String username, EmployeeProfileUpdateDto dto) {
+
+        Employee employee = employeeRepository.findByEmail(username)
+                .orElseThrow(() -> new ResourceNotFoundException("Employee not found"));
+
+        employee.setPhone(dto.getPhone());
+        employee.setAddress(dto.getAddress());
+
+        Employee updated = employeeRepository.save(employee);
+        return EmployeeMapper.mapToEmployeeDto(updated);
+    }
+
+    @Override
+    @Transactional
+    public String adminResetEmployeePassword(Long employeeId) {
+
+        Employee employee = employeeRepository.findById(employeeId)
+                .orElseThrow(() -> new ResourceNotFoundException("Not found"));
+
+        User user = employee.getUser();
+        if (user == null) {
+            throw new ResourceNotFoundException("User not found for employee");
+        }
+
+        String tempPassword = PasswordGenerator.genarate(12);
+
+        user.setPassword(passwordEncoder.encode(tempPassword));
+        user.setMustChangePassword(true);
+
+        userRepository.save(user);
+
+        return tempPassword;
     }
 }

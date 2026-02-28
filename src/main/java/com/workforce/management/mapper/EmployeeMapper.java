@@ -11,6 +11,8 @@ public class EmployeeMapper {
         employeeDto.setFirstName(employee.getFirstName());
         employeeDto.setLastName(employee.getLastName());
         employeeDto.setEmail(employee.getEmail());
+        employeeDto.setPhone(employee.getPhone());
+        employeeDto.setAddress(employee.getAddress());
         return employeeDto;
     }
     public static Employee mapToEmployee(EmployeeDto employeeDto) {
@@ -19,6 +21,8 @@ public class EmployeeMapper {
         employee.setFirstName(employeeDto.getFirstName());
         employee.setLastName(employeeDto.getLastName());
         employee.setEmail(employeeDto.getEmail());
+        employee.setPhone(employeeDto.getPhone());
+        employee.setAddress(employeeDto.getAddress());
         return employee;
     }
 }

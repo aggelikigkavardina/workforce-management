@@ -2,9 +2,11 @@ package com.workforce.management.controller;
 
 import com.workforce.management.dto.EmployeeCreateResponse;
 import com.workforce.management.dto.EmployeeDto;
+import com.workforce.management.dto.EmployeeProfileUpdateDto;
 import com.workforce.management.service.EmployeeService;
 import com.workforce.management.validation.OnCreate;
 import com.workforce.management.validation.OnUpdate;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -12,6 +14,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @CrossOrigin("*")
 @AllArgsConstructor
@@ -61,5 +64,24 @@ public class EmployeeController {
     public ResponseEntity<String> deleteEmployee(@PathVariable("id") Long employeeId) {
         employeeService.deleteEmployee(employeeId);
         return ResponseEntity.ok("Employee deleted successfully.");
+    }
+
+    @PutMapping("/me")
+    public ResponseEntity<EmployeeDto> updateMyProfile(@Valid @RequestBody EmployeeProfileUpdateDto dto,
+            Authentication authentication) {
+
+        String username = authentication.getName();
+        EmployeeDto updated = employeeService.updateMyProfile(username, dto);
+        return ResponseEntity.ok(updated);
+    }
+
+    @PostMapping("/{id}/reset-password")
+    public ResponseEntity<Map<String, String>> resetPassword(@PathVariable Long id) {
+
+        String tempPassword = employeeService.adminResetEmployeePassword(id);
+
+        return ResponseEntity.ok(Map.of(
+                "temporaryPassword", tempPassword
+        ));
     }
 }

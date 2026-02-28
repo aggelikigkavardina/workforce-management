@@ -25,6 +25,12 @@ public class Employee {
     @Column(name = "email_id",nullable = false ,unique = true)
     private String email;
 
+    @Column(name = "phone")
+    private String phone;
+
+    @Column(name = "address")
+    private String address;
+
     @OneToOne(mappedBy = "employee", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private User user;
 }

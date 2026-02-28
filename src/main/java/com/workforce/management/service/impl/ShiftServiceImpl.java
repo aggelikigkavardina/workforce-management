@@ -3,6 +3,7 @@ package com.workforce.management.service.impl;
 import com.workforce.management.dto.ShiftDto;
 import com.workforce.management.entity.Employee;
 import com.workforce.management.entity.Shift;
+import com.workforce.management.exception.BadRequestException;
 import com.workforce.management.exception.ResourceNotFoundException;
 import com.workforce.management.mapper.ShiftMapper;
 import com.workforce.management.repository.EmployeeRepository;
@@ -96,7 +97,7 @@ public class ShiftServiceImpl implements ShiftService {
     private void validateRange(Instant start, Instant end) {
         if (start == null || end == null) return;
         if (!end.isAfter(start)) {
-            throw new RuntimeException("endAt must be after startAt");
+            throw new BadRequestException("Start time must be before end time");
         }
     }
 }

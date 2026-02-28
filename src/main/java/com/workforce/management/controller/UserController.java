@@ -2,6 +2,8 @@ package com.workforce.management.controller;
 
 import com.workforce.management.dto.ChangePasswordDto;
 import com.workforce.management.entity.User;
+import com.workforce.management.exception.BadRequestException;
+import com.workforce.management.exception.ResourceNotFoundException;
 import com.workforce.management.repository.UserRepository;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -26,14 +28,14 @@ public class UserController {
         String username = authentication.getName();
 
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         if (!passwordEncoder.matches(dto.getCurrentPassword(), user.getPassword())) {
-            throw new RuntimeException("Current password is incorrect");
+            throw new BadRequestException("Current password is incorrect");
         }
 
         if (passwordEncoder.matches(dto.getNewPassword(), user.getPassword())) {
-            throw new RuntimeException("New password must be different from current password");
+            throw new BadRequestException("New password must be different from current password");
         }
 
         user.setPassword(passwordEncoder.encode(dto.getNewPassword()));

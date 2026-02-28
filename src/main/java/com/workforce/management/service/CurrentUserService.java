@@ -1,6 +1,7 @@
 package com.workforce.management.service;
 
 import com.workforce.management.entity.User;
+import com.workforce.management.exception.ResourceNotFoundException;
 import com.workforce.management.repository.UserRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.security.core.Authentication;
@@ -18,13 +19,13 @@ public class CurrentUserService {
         String username = auth.getName();
 
         return userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found: " + username));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found: " + username));
     }
 
     public Long getLoggedInEmployeeId() {
         User user = getLoggedInUser();
         if (user.getEmployee() == null) {
-            throw new RuntimeException("User has no employee mapped");
+            throw new ResourceNotFoundException("User has no employee mapped");
         }
         return user.getEmployee().getId();
     }
