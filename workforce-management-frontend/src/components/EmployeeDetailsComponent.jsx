@@ -9,6 +9,14 @@ const EmployeeDetailsComponent = () => {
   const [employee, setEmployee] = useState(null);
   const [loadError, setLoadError] = useState(null);
 
+  const [detailsModal, setDetailsModal] = useState({
+    open: false,
+    id: null,
+    loading: false,
+    error: "",
+    employee: null
+  });
+
   useEffect(() => {
     setLoadError(null);
     getEmployee(id)
@@ -26,6 +34,44 @@ const EmployeeDetailsComponent = () => {
 
   function goEdit() {
     navigator(`/edit-employee/${id}`);
+  }
+
+  function openDetailsModal(employeeId) {
+    setDetailsModal({
+      open: true,
+      id: employeeId,
+      loading: true,
+      error: "",
+      employee: null
+    });
+
+    getEmployee(employeeId)
+      .then((res) => {
+        setDetailsModal((prev) => ({
+          ...prev,
+          loading: false,
+          employee: res.data
+        }));
+      })
+      .catch((error) => {
+        console.error("getEmployee failed:", error);
+        const status = error?.response?.status;
+        setDetailsModal((prev) => ({
+          ...prev,
+          loading: false,
+          error: status ? `Request failed with status ${status}` : "Request failed"
+        }));
+      });
+  }
+
+  function closeDetailsModal() {
+    setDetailsModal({ open: false, id: null, loading: false, error: "", employee: null });
+  }
+
+  function goEditFromModal() {
+    if (!detailsModal.id) return;
+    closeDetailsModal();
+    navigator(`/edit-employee/${detailsModal.id}`);
   }
 
   return (

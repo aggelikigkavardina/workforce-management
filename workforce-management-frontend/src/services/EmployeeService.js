@@ -11,3 +11,11 @@ export const getEmployee = (employeeId) => axios.get(REST_API_BASE_URL + '/' + e
 export const updateEmployee = (employeeId, employee) => axios.put(REST_API_BASE_URL + '/' + employeeId, employee);
 
 export const deleteEmployee = (employeeId) => axios.delete(REST_API_BASE_URL + '/' + employeeId);
+
+export const resetEmployeePassword = (id) => axios.post(REST_API_BASE_URL + `/${id}/reset-password`, {}, {
+    headers: { Authorization: `Bearer ${getToken()}` }
+  });
+
+export const getMyProfile = () => axios.get(REST_API_BASE_URL + "/me");
+
+export const updateMyProfile = (profile) => axios.put(REST_API_BASE_URL + "/me", profile);
