@@ -8,6 +8,8 @@ const EmployeeComponent = () => {
     const [firstName, setFirstName] = useState('')
     const [lastName, setLastName] = useState('')
     const [email, setEmail] = useState('')
+    const [phone, setPhone] = useState('')
+    const [address, setAddress] = useState('')
     const [password, setPassword] = useState('')
 
     const {id} = useParams();
@@ -16,6 +18,8 @@ const EmployeeComponent = () => {
         firstName: '',
         lastName: '',
         email: '',
+        phone: '',
+        address: '',
         password: ''
     })
 
@@ -28,6 +32,8 @@ const EmployeeComponent = () => {
                 setFirstName(response.data.firstName);
                 setLastName(response.data.lastName);
                 setEmail(response.data.email);
+                setPhone(response.data.phone);
+                setAddress(response.data.address);
             }).catch(error => {
                 console.error(error);
             })
@@ -40,7 +46,7 @@ const EmployeeComponent = () => {
 
         if(validateForm()) {
 
-            const employee = {firstName, lastName, email}
+            const employee = {firstName, lastName, email, phone, address}
 
             if (id) employee.id = Number(id);
 
@@ -150,7 +156,7 @@ const EmployeeComponent = () => {
                 <div className='card-body'>
                     <form>
                         <div className='form-group mb-2'>
-                            <label className='form-label'>First Name:</label>
+                            <label className='form-label'>First Name: *</label>
                             <input
                                 type='text'
                                 placeholder='Enter Employee First Name'
@@ -163,7 +169,7 @@ const EmployeeComponent = () => {
                             {errors.firstName && <div className='invalid-feedback'> {errors.firstName} </div>}
                         </div>
                         <div className='form-group mb-2'>
-                            <label className='form-label'>Last Name:</label>
+                            <label className='form-label'>Last Name: *</label>
                             <input
                                 type='text'
                                 placeholder='Enter Employee Last Name'
@@ -176,7 +182,7 @@ const EmployeeComponent = () => {
                             {errors.lastName && <div className='invalid-feedback'> {errors.lastName} </div>}
                         </div>
                         <div className='form-group mb-2'>
-                            <label className='form-label'>Email:</label>
+                            <label className='form-label'>Email: *</label>
                             <input
                                 type='text'
                                 placeholder='Enter Employee Email'
@@ -187,6 +193,30 @@ const EmployeeComponent = () => {
                             >
                             </input>
                             {errors.email && <div className='invalid-feedback'> {errors.email} </div>}
+                        </div>
+                        <div className='form-group mb-2'>
+                            <label className='form-label'>Phone Number:</label>
+                            <input
+                                type='text'
+                                placeholder='69..'
+                                name='phone'
+                                value={phone}
+                                className='form-control'
+                                onChange={(e) => setPhone(e.target.value)}
+                            >
+                            </input>
+                        </div>
+                        <div className='form-group mb-2'>
+                            <label className='form-label'>Address:</label>
+                            <input
+                                type='text'
+                                placeholder='Enter Employee Address'
+                                name='address'
+                                value={address}
+                                className='form-control'
+                                onChange={(e) => setAddress(e.target.value)}
+                            >
+                            </input>
                         </div>
                         {id && (
                             <div className='form-group mb-2'>

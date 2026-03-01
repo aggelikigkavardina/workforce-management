@@ -196,6 +196,7 @@ const AdminShiftsCalendar = () => {
       if (mode === "EDIT") {
         const onlyEmpId = Array.from(assignIds)[0];
         const payload = {
+          id: Number(editingShiftId),
           employeeId: Number(onlyEmpId),
           title: title.trim(),
           location: location.trim() || null,
@@ -277,6 +278,7 @@ const AdminShiftsCalendar = () => {
 
     try {
       const payload = {
+        id: Number(ev.id),
         employeeId: Number(ev.extendedProps.employeeId),
         title: ev.title,
         location: ev.extendedProps.location || null,
@@ -301,7 +303,7 @@ const AdminShiftsCalendar = () => {
   };
 
   // Allow drag/resize only when viewing <= 1 employee (optional safety)
-  const editableOk = selectedIds.size <= 1;
+  const editableOk = true;
 
   return (
     <div className="container-fluid" style={{ marginTop: "16px" }}>

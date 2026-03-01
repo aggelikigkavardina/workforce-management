@@ -19,24 +19,12 @@ const MyProfileComponent = () => {
       .catch((err) => console.error(err));
   }, []);
 
-  const normalizePhone = (val) => {
-    const s = val.trim().replace(/\s|-/g, "");
-
-    if (s === "") return "";
-
-    if (/^\d{10}$/.test(s)) {
-      return `+30${s}`;
-    }
-
-    return s;
-  }
-
   const validate = () => {
     const e = { phone: "", address: "" };
     let ok = true;
 
-    if (phone.trim() && !/^\+30\d{10}$/.test(phone.trim())) {
-      e.phone = "Phone must be in format +30XXXXXXXXXX";
+    if (phone.trim() && !/^69\d{8}$/.test(phone.trim())) {
+      e.phone = "Phone must be in format 69XXXXXXXX";
       ok = false;
     }
     if (address.length > 255) {
@@ -89,8 +77,8 @@ const MyProfileComponent = () => {
             className={`form-control ${errors.phone ? "is-invalid" : ""}`}
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
-            onBlur={() => setPhone(normalizePhone(phone))}
-            placeholder="+3069XXXXXXXX"
+            onBlur={() => setPhone(phone)}
+            placeholder="69XXXXXXXX"
           />
           {errors.phone && <div className="invalid-feedback">{errors.phone}</div>}
         </div>

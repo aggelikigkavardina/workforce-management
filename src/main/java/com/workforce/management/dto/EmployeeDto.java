@@ -34,8 +34,8 @@ public class EmployeeDto {
     private String password;
 
     @Pattern(
-            regexp = "^\\+30\\d{10}$",
-            message = "Phone must be in format +30XXXXXXXXXX (10 digits after +30)"
+            regexp = "^69\\d{8}$",
+            message = "Phone must be a valid 10 digits number"
     )
     private String phone;
 

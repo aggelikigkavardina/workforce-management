@@ -25,7 +25,7 @@ const ListEmployeeComponent = () => {
   });
 
   const [page, setPage] = useState(0);
-  const pageSize = 10;
+  const pageSize = 12;
 
   const [flash, setFlash] = useState({ success: "" });
 
@@ -61,6 +61,23 @@ const ListEmployeeComponent = () => {
   useEffect(() => {
     setPage(0);
   }, [search, sortBy, sortDir]);
+
+  useEffect(() => {
+    if (!flash.success) return;
+
+    const timer = setTimeout(() => {
+      setFlash({ success: "" });
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }, [flash.success]);
+
+  useEffect(() => {
+    // on mount: ensure nothing is stuck open
+    setDeleteModal({ open: false, employee: null, loading: false, error: "" });
+    setDetailsModal({ open: false, id: null, loading: false, error: "", employee: null });
+    document.body.style.overflow = "auto";
+  }, []);
 
   function getAllEmployees() {
     setLoadError(null);
@@ -214,8 +231,6 @@ const ListEmployeeComponent = () => {
   return (
     <div className='container'>
       <br /><br />
-      <h2 className='text-center'>List of Employees</h2>
-
       {loadError && (
         <div className='alert alert-danger'>
            No employees loaded {loadError}. Console/Network.
@@ -370,6 +385,7 @@ const ListEmployeeComponent = () => {
               backdropFilter: "blur(2px)",
               zIndex: 1040
             }}
+            onClick={closeDeleteModal}
           />
 
           {/* Centered modal */}

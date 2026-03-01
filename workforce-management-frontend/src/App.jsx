@@ -13,6 +13,7 @@ import ChangePasswordComponent from './components/ChangePasswordComponent'
 import ForcePasswordChangeGuard from './guards/ForcePasswordChangeGuard'
 import PublicRoute from './guards/PublicRoute'
 import AdminShiftsCalendar from './components/AdminShiftsCalendar'
+import MessagesComponent from './components/MessagesComponent'
 
 function App() {
   
@@ -35,6 +36,7 @@ function App() {
             <Route path='/edit-employee/:id' element={<EmployeeComponent />} />
             <Route path='/shifts' element={<AdminShiftsCalendar />} />
             <Route path='/employees/:id' element={<EmployeeDetailsComponent />} />
+            <Route path='/messages' element={<MessagesComponent />} />
           </Route>
 
           <Route element={<ProtectedRouteComponent allowedRoles={['ROLE_EMPLOYEE']} />}>
@@ -43,7 +45,8 @@ function App() {
             <Route element={<ForcePasswordChangeGuard />}>   
               {/* // https://localhost:3030/profile */}
               <Route path='/profile' element={<MyProfileComponent />} />
-              <Route path='/my-shifts' element={<MyShiftsCalendar />} />           
+              <Route path='/my-shifts' element={<MyShiftsCalendar />} />
+              <Route path='/messages' element={<MessagesComponent />} />           
             </Route>
           </Route>
         </Routes>
