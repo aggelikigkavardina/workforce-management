@@ -10,6 +10,7 @@ import com.workforce.management.exception.ConflictException;
 import com.workforce.management.exception.ResourceNotFoundException;
 import com.workforce.management.mapper.EmployeeMapper;
 import com.workforce.management.repository.EmployeeRepository;
+import com.workforce.management.repository.ShiftRepository;
 import com.workforce.management.repository.UserRepository;
 import com.workforce.management.service.EmployeeService;
 import com.workforce.management.util.PasswordGenerator;
@@ -28,6 +29,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     private EmployeeRepository employeeRepository;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final ShiftRepository shiftRepository;
 
     @Override
     @Transactional
@@ -125,6 +127,8 @@ public class EmployeeServiceImpl implements EmployeeService {
         Employee employee =
                 employeeRepository.findById(employeeId)
                         .orElseThrow(() -> new ResourceNotFoundException("Not found"));
+
+        shiftRepository.deleteByEmployeeId(employeeId);
 
         User user = employee.getUser();
         if (user != null) {

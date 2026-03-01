@@ -10,6 +10,7 @@ public class ShiftMapper {
         shiftDto.setId(shift.getId());
         shiftDto.setEmployeeId(shift.getEmployee().getId());
         shiftDto.setTitle(shift.getTitle());
+        shiftDto.setLocation(shift.getLocation());
         shiftDto.setStartAt(shift.getStartAt());
         shiftDto.setEndAt(shift.getEndAt());
         shiftDto.setNotes(shift.getNotes());
@@ -20,6 +21,7 @@ public class ShiftMapper {
         Shift shift = new Shift();
         shift.setId(shiftDto.getId());
         shift.setTitle(shiftDto.getTitle());
+        shift.setLocation(shiftDto.getLocation());
         shift.setStartAt(shiftDto.getStartAt());
         shift.setEndAt(shiftDto.getEndAt());
         shift.setNotes(shiftDto.getNotes());

@@ -12,6 +12,7 @@ import EmployeeDetailsComponent from './components/EmployeeDetailsComponent'
 import ChangePasswordComponent from './components/ChangePasswordComponent'
 import ForcePasswordChangeGuard from './guards/ForcePasswordChangeGuard'
 import PublicRoute from './guards/PublicRoute'
+import AdminShiftsCalendar from './components/AdminShiftsCalendar'
 
 function App() {
   
@@ -32,7 +33,7 @@ function App() {
             <Route path='/add-employee' element={<EmployeeComponent />} />
             {/* // https://localhost:3030/edit-employee/1 */}
             <Route path='/edit-employee/:id' element={<EmployeeComponent />} />
-            <Route path='/shifts' element={<ShiftsCalendar />} />
+            <Route path='/shifts' element={<AdminShiftsCalendar />} />
             <Route path='/employees/:id' element={<EmployeeDetailsComponent />} />
           </Route>
 

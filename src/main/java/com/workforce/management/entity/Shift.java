@@ -26,6 +26,9 @@ public class Shift {
     @Column(name = "title", nullable = false)
     private String title;
 
+    @Column(length = 120)
+    private String location;
+
     @Column(name = "start_at", nullable = false)
     private Instant startAt;
 

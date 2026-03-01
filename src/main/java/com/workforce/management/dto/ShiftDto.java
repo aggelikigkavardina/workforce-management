@@ -26,6 +26,9 @@ public class ShiftDto {
     @Size(max = 80, groups = {OnCreate.class, OnUpdate.class}, message = "Title must be <= 80 characters")
     private String title;
 
+    @Size(max = 120, groups = {OnCreate.class, OnUpdate.class}, message = "Location must be <= 120 characters")
+    private String location;
+
     @NotNull(groups = {OnCreate.class, OnUpdate.class}, message = "Start time is required")
     private Instant startAt;
 

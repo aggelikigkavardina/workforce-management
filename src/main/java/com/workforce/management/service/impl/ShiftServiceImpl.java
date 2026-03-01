@@ -38,6 +38,10 @@ public class ShiftServiceImpl implements ShiftService {
         Shift shift = ShiftMapper.mapToShift(dto);
         shift.setEmployee(employee);
 
+        if (shiftRepository.existsOverlappingShift(dto.getEmployeeId(), dto.getStartAt(), dto.getEndAt())) {
+            throw new BadRequestException("Shift overlaps with an existing shift for this employee");
+        }
+
         Shift saved = shiftRepository.save(shift);
         return ShiftMapper.mapToShiftDto(saved);
     }
@@ -51,6 +55,7 @@ public class ShiftServiceImpl implements ShiftService {
         validateRange(dto.getStartAt(), dto.getEndAt());
 
         shift.setTitle(dto.getTitle());
+        shift.setLocation(dto.getLocation());
         shift.setStartAt(dto.getStartAt());
         shift.setEndAt(dto.getEndAt());
         shift.setNotes(dto.getNotes());
@@ -59,6 +64,12 @@ public class ShiftServiceImpl implements ShiftService {
             Employee employee = employeeRepository.findById(dto.getEmployeeId())
                     .orElseThrow(() -> new ResourceNotFoundException("Employee not found"));
             shift.setEmployee(employee);
+        }
+
+        Long employeeId = dto.getEmployeeId() != null ? dto.getEmployeeId() : shift.getEmployee().getId();
+
+        if (shiftRepository.existsOverlappingShiftExcludingId(employeeId, shiftId, dto.getStartAt(), dto.getEndAt())) {
+            throw new BadRequestException("Shift overlaps with an existing shift for this employee");
         }
 
         Shift updated = shiftRepository.save(shift);
