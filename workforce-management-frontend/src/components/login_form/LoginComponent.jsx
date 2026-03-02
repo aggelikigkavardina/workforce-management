@@ -32,9 +32,9 @@ const LoginComponent = () => {
           if (role === 'ROLE_EMPLOYEE' && mustChange) {
             navigator('/change-password')
           } else if (role === 'ROLE_ADMIN') {
-            navigator('/employees')
+            navigator('/shifts')
           } else {
-            navigator('/profile')
+            navigator('/my-shifts')
           }
         }).catch(error => {
             console.log('LOGIN ERROR:', {

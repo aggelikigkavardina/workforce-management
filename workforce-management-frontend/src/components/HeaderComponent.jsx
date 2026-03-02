@@ -21,7 +21,7 @@ const HeaderComponent = () => {
       <nav className="navbar navbar-expand-lg navbar-dark bg-dark px-3">
         <NavLink
           className="navbar-brand"
-          to={loggedIn ? (isAdminUser() ? '/employees' : '/profile') : '/'}
+          to={loggedIn ? (isAdminUser() ? '/shifts' : '/my-shifts') : '/'}
         >
           Workforce Management
         </NavLink>
@@ -49,19 +49,16 @@ const HeaderComponent = () => {
                 {isAdminUser() && (
                   <>
                     <li className="nav-item">
-                      <NavLink to="/home" className="nav-link">Home</NavLink>
+                      <NavLink to="/shifts" className="nav-link">Schedule</NavLink>
                     </li>
                     <li className="nav-item">
                       <NavLink to="/employees" className="nav-link">Employees</NavLink>
                     </li>
                     <li className="nav-item">
-                      <NavLink to="/shifts" className="nav-link">Schedule</NavLink>
-                    </li>
-                    <li className="nav-item">
                       <NavLink to="/messages" className="nav-link">Messages</NavLink>
                     </li>
                     <li className="nav-item">
-                      <NavLink to="/me" className="nav-link">My Profile</NavLink>
+                      <NavLink to="/profile" className="nav-link">Profile</NavLink>
                     </li>
                   </>
                 )}
@@ -69,13 +66,13 @@ const HeaderComponent = () => {
                 {isEmployeeUser() && (
                   <>
                     <li className="nav-item">
-                      <NavLink to="/my-shifts" className="nav-link">My Schedule</NavLink>
+                      <NavLink to="/my-shifts" className="nav-link">Schedule</NavLink>
                     </li>
                     <li className="nav-item">
                       <NavLink to="/messages" className="nav-link">Messages</NavLink>
                     </li>
                     <li className="nav-item">
-                      <NavLink to="/profile" className="nav-link">My Profile</NavLink>
+                      <NavLink to="/profile" className="nav-link">Profile</NavLink>
                     </li>
                   </>
                 )}
