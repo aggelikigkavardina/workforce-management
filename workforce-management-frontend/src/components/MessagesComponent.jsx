@@ -229,7 +229,6 @@ const MessagesComponent = () => {
   };
 
   const threadSub = (t) => {
-    // optional: show subject or email
     if (admin) return t.employeeEmail || t.subject || "";
     return t.subject || "";
   };
@@ -359,7 +358,6 @@ const MessagesComponent = () => {
 
               {!activeLoading && !activeError && active?.messages?.map((m) => {
                 const mine = (admin && m.senderRole === "ROLE_ADMIN") || (!admin && m.senderRole === "ROLE_EMPLOYEE");
-                // (Αν θες ακριβές "mine", καλύτερα να στέλνεις senderId + να έχεις currentUserId. Εδώ το κάνουμε role-based για simplicity.)
 
                 return (
                   <div

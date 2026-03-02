@@ -3,16 +3,16 @@ import { isAdminUser } from "./AuthService";
 
 const BASE = "http://localhost:8080";
 
-export const listConversations = () => {
-  if (isAdminUser()) return axios.get(`${BASE}/api/admin/conversations`);
-  return axios.get(`${BASE}/api/conversations`);
+export const createConversation = (payload) => {
+  return isAdminUser()
+    ? axios.post(`${BASE}/api/admin/conversations`, payload)
+    : axios.post(`${BASE}/api/conversations`, payload);
 };
 
-export const createConversation = (payload) => {
-  // employee payload: { subject }
-  // admin payload: { subject, employeeId } 
-  if (isAdminUser()) return axios.post(`${BASE}/api/admin/conversations`, payload);
-  return axios.post(`${BASE}/api/admin/conversations`, payload);
+export const listConversations = () => {
+  return isAdminUser()
+    ? axios.get(`${BASE}/api/admin/conversations`)
+    : axios.get(`${BASE}/api/conversations`);
 };
 
 export const getConversation = (id) =>

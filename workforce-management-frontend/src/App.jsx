@@ -7,7 +7,6 @@ import LoginComponent from './components/login_form/LoginComponent'
 import MyProfileComponent from './components/MyProfileComponent'
 import ProtectedRouteComponent from './components/ProtectedRouteComponent'
 import MyShiftsCalendar from './components/MyShiftsCalendar'
-import ShiftsCalendar from './components/ShiftsCalendar'
 import EmployeeDetailsComponent from './components/EmployeeDetailsComponent'
 import ChangePasswordComponent from './components/ChangePasswordComponent'
 import ForcePasswordChangeGuard from './guards/ForcePasswordChangeGuard'
@@ -27,6 +26,13 @@ function App() {
             <Route path='/' element={<LoginComponent />} />
           </Route>
 
+          <Route element={<ProtectedRouteComponent allowedRoles={['ROLE_ADMIN','ROLE_EMPLOYEE']} />}>
+            <Route element={<ForcePasswordChangeGuard />}>
+              <Route path='/messages' element={<MessagesComponent />} />
+              <Route path='/profile' element={<MyProfileComponent />} />
+            </Route>
+          </Route>
+
           <Route element={<ProtectedRouteComponent allowedRoles={['ROLE_ADMIN']} />}>
             {/* // https://localhost:3030/employees */}
             <Route path='/employees' element={<ListEmployeeComponent />} />
@@ -36,7 +42,6 @@ function App() {
             <Route path='/edit-employee/:id' element={<EmployeeComponent />} />
             <Route path='/shifts' element={<AdminShiftsCalendar />} />
             <Route path='/employees/:id' element={<EmployeeDetailsComponent />} />
-            <Route path='/messages' element={<MessagesComponent />} />
           </Route>
 
           <Route element={<ProtectedRouteComponent allowedRoles={['ROLE_EMPLOYEE']} />}>
@@ -44,9 +49,7 @@ function App() {
 
             <Route element={<ForcePasswordChangeGuard />}>   
               {/* // https://localhost:3030/profile */}
-              <Route path='/profile' element={<MyProfileComponent />} />
-              <Route path='/my-shifts' element={<MyShiftsCalendar />} />
-              <Route path='/messages' element={<MessagesComponent />} />           
+              <Route path='/my-shifts' element={<MyShiftsCalendar />} />          
             </Route>
           </Route>
         </Routes>

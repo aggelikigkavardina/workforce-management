@@ -6,7 +6,7 @@ export default function ProtectedRouteComponent({ allowedRoles }) {
   const role = getUserRole();
 
   if (!token) return <Navigate to='/' replace />;
-  if (!role) return <Navigate to="/" replace />;
+  if (!role) return <Navigate to='/' replace />;
 
   if (allowedRoles && !allowedRoles.includes(role)) {
     return <Navigate to={role === 'ROLE_ADMIN' ? '/employees' : '/profile'} replace />;
