@@ -9,7 +9,7 @@ export default function ProtectedRouteComponent({ allowedRoles }) {
   if (!role) return <Navigate to='/' replace />;
 
   if (allowedRoles && !allowedRoles.includes(role)) {
-    return <Navigate to={role === 'ROLE_ADMIN' ? '/employees' : '/profile'} replace />;
+    return <Navigate to={role === 'ROLE_ADMIN' ? '/shifts' : '/my-shifts'} replace />;
   }
 
   return <Outlet />;

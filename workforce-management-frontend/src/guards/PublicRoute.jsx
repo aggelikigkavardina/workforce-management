@@ -13,18 +13,18 @@ const PublicRoute = () => {
   const role = getUserRole();
 
   if (role === 'ROLE_ADMIN') {
-    return <Navigate to = '/employees' replace />;
+    return <Navigate to = '/shifts' replace />;
   }
 
   if (role === 'ROLE_EMPLOYEE') {
     if (mustChangePassword()) {
       return <Navigate to = '/change-password' replace />;
     }
-    return <Navigate to = '/profile' replace />;
+    return <Navigate to = '/my-shifts' replace />;
   }
 
   // fallback
-  return <Navigate to = '/profile' replace />;
+  return <Navigate to = '/my-shifts' replace />;
 };
 
 export default PublicRoute;
