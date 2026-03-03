@@ -1,9 +1,12 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from "react";
 import FullCalendar from "@fullcalendar/react";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import { getMyShifts } from "../services/ShiftService";
+
+const WORK_MIN_TIME = "06:00:00";
+const WORK_MAX_TIME = "22:00:00";
 
 const MyShiftsCalendar = () => {
   const [events, setEvents] = useState([]);
@@ -36,9 +39,6 @@ const MyShiftsCalendar = () => {
     <div className="container" style={{ marginTop: "20px" }}>
       <div className="d-flex justify-content-between align-items-center mb-3">
         <h2 className="m-0">My Shifts</h2>
-        <button className="btn btn-outline-secondary btn-sm" onClick={load}>
-          Refresh
-        </button>
       </div>
 
       {errorMsg && <div className="alert alert-danger">{errorMsg}</div>}
@@ -61,6 +61,10 @@ const MyShiftsCalendar = () => {
               if (notes) alert(notes);
             }}
             height="auto"
+            slotMinTime={WORK_MIN_TIME}
+            slotMaxTime={WORK_MAX_TIME}
+            scrollTime={WORK_MIN_TIME}
+            slotDuration="00:30:00"
           />
         </div>
       </div>
