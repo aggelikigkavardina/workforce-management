@@ -1,0 +1,5 @@
+workforce-management-frontend/node_modules
+workforce-management-frontend/build
+target
+.git
+.idea

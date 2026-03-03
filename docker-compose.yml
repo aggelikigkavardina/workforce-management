@@ -1,0 +1,41 @@
+services:
+  db:
+    image: mysql:8.4
+    container_name: app_db
+    environment:
+      MYSQL_DATABASE: workforce
+      MYSQL_USER: workforce
+      MYSQL_PASSWORD: workforcepass
+      MYSQL_ROOT_PASSWORD: rootpass
+    ports:
+      - "3307:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+    healthcheck:
+      test: [ "CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -prootpass --silent" ]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  backend:
+    build: .
+    container_name: app_backend
+    depends_on:
+      - db
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/workforce?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: workforce
+      SPRING_DATASOURCE_PASSWORD: workforcepass
+    ports:
+      - "8080:8080"
+
+  frontend:
+    build: ./workforce-management-frontend
+    container_name: app_frontend
+    depends_on:
+      - backend
+    ports:
+      - "3000:80"
+
+volumes:
+  db_data:
