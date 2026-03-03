@@ -12,7 +12,9 @@ import ChangePasswordComponent from './components/ChangePasswordComponent'
 import ForcePasswordChangeGuard from './guards/ForcePasswordChangeGuard'
 import PublicRoute from './guards/PublicRoute'
 import AdminShiftsCalendar from './components/AdminShiftsCalendar'
-import MessagesComponent from './components/MessagesComponent'
+import MessagesListPage from './components/MessagesListPage'
+import MessagesThreadPage from './components/MessagesThreadPage'
+import MessagesLayout from './components/MessagesLayout'
 
 function App() {
   
@@ -28,7 +30,10 @@ function App() {
 
           <Route element={<ProtectedRouteComponent allowedRoles={['ROLE_ADMIN','ROLE_EMPLOYEE']} />}>
             <Route element={<ForcePasswordChangeGuard />}>
-              <Route path='/messages' element={<MessagesComponent />} />
+              <Route path="/messages" element={<MessagesLayout />}>
+              <Route index element={<MessagesListPage />} />
+              <Route path=":id" element={<MessagesThreadPage />} />
+            </Route>
               <Route path='/profile' element={<MyProfileComponent />} />
             </Route>
           </Route>
