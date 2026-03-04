@@ -2,16 +2,22 @@ import { useState } from 'react'
 import { loginAPICall, saveToken, saveLoggedInUser } from '../../services/AuthService'
 import { useNavigate } from 'react-router-dom'
 import { isValidEmail, isValidPassword } from '../../helpers/ValidationHelper'
+import { Eye, EyeOff } from 'lucide-react';
 
 const LoginComponent = () => {
 
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
 
+  const [showPassword, setShowPassword] = useState(false)
+
   const [errors, setErrors] = useState({
         username: '',
-        password: ''
+        password: '',
+        general: ''
     })
+
+    const [credentialsError, setCredentialsError] = useState(false);
 
   const navigator = useNavigate();
 
@@ -37,6 +43,20 @@ const LoginComponent = () => {
             navigator('/my-shifts')
           }
         }).catch(error => {
+            console.log("LOGIN ERROR FULL:", error);
+            console.log("STATUS:", error?.response?.status);
+            console.log("DATA:", error?.response?.data);
+            console.log("HEADERS:", error?.response?.headers);
+
+            const status = error?.response?.status;
+            if (status === 401 || status === 403) {
+              setCredentialsError(true);
+              setErrors(prev => ({
+                ...prev,
+                general: 'Wrong email or password'
+              }));
+              return;
+            }
             console.log('LOGIN ERROR:', {
               status: error?.response?.status,
               data: error?.response?.data});
@@ -46,30 +66,25 @@ const LoginComponent = () => {
     function validateForm() {
       let valid = true;
 
-      const errorsCopy = {... errors}
+      const errorsCopy = { username: "", password: "", general: "" };
 
-      if(!username.trim()) {
-          errorsCopy.username = 'Email is required';
-           valid = false;
-      } else if (!isValidEmail(username)) {
-          errorsCopy.username = 'Invalid email format';
-           valid = false;
-      } else {
-          errorsCopy.username = '';
+      if (!username.trim()) {
+        errorsCopy.username = "Email is required";
+        valid = false;
+      } else if (!isValidEmail(username.trim())) {
+        errorsCopy.username = "Invalid email format";
+        valid = false;
       }
 
-      if(!password.trim()) {
-          errorsCopy.password = 'Password is required';
-           valid = false;
-      } else if (!isValidPassword(password)) {
-          errorsCopy.password = 'Password must be 6-64 character';
-           valid = false;
-      } else {
-          errorsCopy.password = '';
+      if (!password.trim()) {
+        errorsCopy.password = "Password is required";
+        valid = false;
+      } else if (!isValidPassword(password.trim())) {
+        errorsCopy.password = 'Wrong email or password';
+        valid = false;
       }
 
       setErrors(errorsCopy);
-
       return valid;
     }
   }
@@ -88,27 +103,63 @@ const LoginComponent = () => {
                   id='username'
                   name='username'
                   type='text'
-                  className={`form-control ${ errors.username ? 'is-invalid': ''}`}
+                  className={`form-control ${(errors.username || credentialsError) ? "is-invalid" : ""}`}
                   value={username}
-                  onChange={(e) => setUsername(e.target.value)}
+                  onChange={(e) => {
+                    setUsername(e.target.value);
+                    setCredentialsError(false);
+                    setErrors(prev => ({ ...prev, general: "" }));
+                  }}
                   autoComplete='username'
                 />
-                {errors.username && <div className='invalid-feedback'> {errors.username} </div>}
+                {errors.username && !credentialsError && (
+                  <div className="invalid-feedback">{errors.username}</div>
+                )}
               </div>
-              <div className='form-group mb-2'>
-                <label htmlFor='password'>Password:</label>
-                <input
-                  id='password'
-                  name='password'
-                  type='password'
-                  className={`form-control ${ errors.password ? 'is-invalid': ''}`}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  autoComplete='current-password'
-                />
-                {errors.password && <div className='invalid-feedback'> {errors.password} </div>}
+              <div className="form-group mb-2">
+                <label htmlFor="password">Password:</label>
+
+                <div className="input-group">
+                  <input
+                    id="password"
+                    name="password"
+                    type={showPassword ? "text" : "password"}
+                    className={`form-control ${(errors.password || credentialsError) ? "is-invalid" : ""}`}
+                    value={password}
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      setCredentialsError(false);
+                      setErrors(prev => ({ ...prev, general: "" }));
+                    }}
+                    autoComplete="current-password"
+                  />
+
+                  <span
+                    className="input-group-text"
+                    style={{ cursor: "pointer" }}
+                    onClick={() => setShowPassword((prev) => !prev)}
+                  >
+                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </span>
+
+                  {errors.general && (
+                    <div className="invalid-feedback d-block">
+                      {errors.general}
+                    </div>
+                  )}
+
+                  {errors.password && !errors.general && (
+                    <div className="invalid-feedback d-block">
+                      {errors.password}
+                    </div>
+                  )}
+                </div>
               </div>
-              <button className='btn btn-success' style={{marginTop: '10px'}}>Login</button>
+              <div className='d-grid mt-3'>
+                <button type='submit' className='btn btn-success w-100'>
+                  Sign in
+                </button>
+              </div>
             </form>
           </div>
         </div>
