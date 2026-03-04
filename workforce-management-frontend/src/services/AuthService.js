@@ -1,50 +1,52 @@
-import axios from 'axios';
+import api from "./api";
 
-const AUTH_REST_API_BASE_URL = 'http://localhost:8080/api/auth';
+const AUTH_REST_API_BASE_URL = "/api/auth";
 
 export const loginAPICall = (username, password) =>
-    axios.post(AUTH_REST_API_BASE_URL + '/login', {
-        username,
-        password
-    });
+  api.post(`${AUTH_REST_API_BASE_URL}/login`, {
+    username,
+    password,
+  });
+
+export const logoutAPICall = () => api.post(`${AUTH_REST_API_BASE_URL}/logout`);
 
 export const saveToken = (token) => {
-    localStorage.setItem('token', token);
+  localStorage.setItem("token", token);
 };
 
 export const getToken = () => {
-    return localStorage.getItem('token');
+  return localStorage.getItem("token");
 };
 
 export const saveLoggedInUser = (username, role, mustChangePassword) => {
-    localStorage.setItem('authenticatedUser', username);
-    localStorage.setItem('role', role);
-    localStorage.setItem('mustChangePassword', String(!!mustChangePassword));
+  localStorage.setItem("loggedInUser", username);
+  localStorage.setItem("role", role);
+  localStorage.setItem("mustChangePassword", String(!!mustChangePassword));
 };
 
 export const getLoggedInUser = () => {
-    return localStorage.getItem('authenticatedUser');
+  return localStorage.getItem("loggedInUser");
 };
 
 export const getUserRole = () => {
-    return localStorage.getItem('role');
+  return localStorage.getItem("role");
+};
+
+export const mustChangePassword = () => {
+  return localStorage.getItem("mustChangePassword") === "true";
+};
+
+export const isUserLoggedIn = () => {
+  return !!getToken();
 };
 
 export const isAdminUser = () => {
-    return getUserRole() === 'ROLE_ADMIN';
-};
-
-export const isEmployeeUser = () => {
-    return getUserRole() === 'ROLE_EMPLOYEE';
+  return getUserRole() === "ROLE_ADMIN";
 };
 
 export const logout = () => {
-    localStorage.clear();
+  localStorage.removeItem("token");
+  localStorage.removeItem("loggedInUser");
+  localStorage.removeItem("role");
+  localStorage.removeItem("mustChangePassword");
 };
-
-export const isUserLoggedIn = () => !!getToken();
-
-export const logoutAPICall = () =>
-  axios.post('http://localhost:8080/api/auth/logout');
-
-export const mustChangePassword = () => localStorage.getItem('mustChangePassword') === 'true';
