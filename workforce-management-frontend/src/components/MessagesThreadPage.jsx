@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Send } from "lucide-react";
+import { Send, X } from "lucide-react";
 import { getConversation, sendMessage, markRead } from "../services/MessagesService";
 import { isAdminUser } from "../services/AuthService";
+
 
 export default function MessagesThreadPage() {
   const { id } = useParams();
@@ -77,15 +78,19 @@ export default function MessagesThreadPage() {
   };
 
   return (
-    <div className="border rounded d-flex flex-column" style={{ height: "75vh", overflow: "hidden" }}>
+    <div className="card d-flex flex-column" style={{ height: "75vh", overflow: "hidden" }}>
       <div className="p-3 border-bottom d-flex justify-content-between align-items-center">
         <div>
           <div className="fw-bold">{active?.subject || "Conversation"}</div>
           <div className="text-muted small">{admin ? "with Employee" : "with Admin"}</div>
         </div>
 
-        <button className="btn btn-outline-secondary btn-sm" onClick={() => navigate("/messages")}>
-          Back
+        <button
+          className="btn btn-link text-muted p-0"
+          onClick={() => navigate("/messages")}
+          title="Close"
+        >
+          <X size={20} />
         </button>
       </div>
 

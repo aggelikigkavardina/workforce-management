@@ -128,7 +128,7 @@ export default function MessagesListPage() {
 
   return (
     <>
-      <div className="border rounded d-flex flex-column" style={{ height: "75vh", overflow: "hidden" }}>
+      <div className="card d-flex flex-column" style={{ height: "75vh", overflow: "hidden" }}>
         <div className="p-3 border-bottom d-flex justify-content-between align-items-center">
           <strong>Conversations</strong>
           <button className="btn btn-primary btn-sm d-flex align-items-center gap-2" onClick={openNewModal}>
