@@ -44,10 +44,6 @@ const MyShiftsCalendar = () => {
         flexDirection: "column"
       }}
     >
-      <div className="d-flex justify-content-between align-items-center mb-3">
-        <h2 className="m-0">My Shifts</h2>
-      </div>
-
       {errorMsg && <div className="alert alert-danger">{errorMsg}</div>}
 
       <div className="card flex-grow-1 d-flex flex-column">
@@ -66,7 +62,7 @@ const MyShiftsCalendar = () => {
               selectable={false}
               eventClick={(info) => {
                 const notes = info.event.extendedProps?.notes;
-                if (notes) alert(notes); // αν θες, στο κάνω modal σαν του admin
+                if (notes) alert(notes);
               }}
               height="100%"
               slotMinTime={WORK_MIN_TIME}
