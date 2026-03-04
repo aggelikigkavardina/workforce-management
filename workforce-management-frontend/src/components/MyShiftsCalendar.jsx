@@ -24,7 +24,7 @@ const MyShiftsCalendar = () => {
         title: s.title,
         start: s.startAt,
         end: s.endAt,
-        extendedProps: { notes: s.notes }
+        extendedProps: { notes: s.notes, location: s.location }
       }));
       setEvents(mapped);
       setErrorMsg("");
@@ -36,36 +36,52 @@ const MyShiftsCalendar = () => {
   };
 
   return (
-    <div className="container" style={{ marginTop: "20px" }}>
+    <div
+      className="container py-2"
+      style={{
+        height: "calc(100vh - 56px)",
+        display: "flex",
+        flexDirection: "column"
+      }}
+    >
       <div className="d-flex justify-content-between align-items-center mb-3">
         <h2 className="m-0">My Shifts</h2>
       </div>
 
       {errorMsg && <div className="alert alert-danger">{errorMsg}</div>}
 
-      <div className="card">
-        <div className="card-body">
-          <FullCalendar
-            plugins={[timeGridPlugin, dayGridPlugin, interactionPlugin]}
-            initialView="timeGridWeek"
-            headerToolbar={{
-              left: "prev,next today",
-              center: "title",
-              right: "dayGridMonth,timeGridWeek,timeGridDay"
-            }}
-            events={events}
-            editable={false}
-            selectable={false}
-            eventClick={(info) => {
-              const notes = info.event.extendedProps?.notes;
-              if (notes) alert(notes);
-            }}
-            height="auto"
-            slotMinTime={WORK_MIN_TIME}
-            slotMaxTime={WORK_MAX_TIME}
-            scrollTime={WORK_MIN_TIME}
-            slotDuration="00:30:00"
-          />
+      <div className="card flex-grow-1 d-flex flex-column">
+        <div className="card-body p-2 d-flex flex-column">
+          <div style={{ flex: 1, overflow: "auto" }}>
+            <FullCalendar
+              plugins={[timeGridPlugin, dayGridPlugin, interactionPlugin]}
+              initialView="timeGridWeek"
+              headerToolbar={{
+                left: "prev,next today",
+                center: "title",
+                right: "dayGridMonth,timeGridWeek,timeGridDay"
+              }}
+              events={events}
+              editable={false}
+              selectable={false}
+              eventClick={(info) => {
+                const notes = info.event.extendedProps?.notes;
+                if (notes) alert(notes); // αν θες, στο κάνω modal σαν του admin
+              }}
+              height="100%"
+              slotMinTime={WORK_MIN_TIME}
+              slotMaxTime={WORK_MAX_TIME}
+              scrollTime={WORK_MIN_TIME}
+              slotDuration="00:30:00"
+              allDaySlot={false}
+              expandRows={false}
+              contentHeight="100%"
+            />
+          </div>
+
+          <div className="form-text mt-2">
+            Tip: Click a shift to view notes.
+          </div>
         </div>
       </div>
     </div>

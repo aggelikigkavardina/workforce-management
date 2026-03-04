@@ -7,7 +7,7 @@ import interactionPlugin from "@fullcalendar/interaction";
 import { listEmployees } from "../services/EmployeeService";
 import { getAllShifts, createShift, updateShift, deleteShift } from "../services/ShiftService";
 
-import { Search, X, ChevronDown, CheckSquare, Eraser } from "lucide-react";
+import { Search, X, ChevronDown } from "lucide-react";
 
 // ----- helpers -----
 const pad2 = (n) => String(n).padStart(2, "0");
@@ -20,6 +20,28 @@ const buildLocalDateFromParts = (dateStr, timeStr) => {
   const [y, m, day] = dateStr.split("-").map(Number);
   const [hh, mm] = timeStr.split(":").map(Number);
   return new Date(y, m - 1, day, hh, mm, 0, 0); // LOCAL time
+};
+
+const overlaps = (startA, endA, startB, endB) => {
+  return startA < endB && endA > startB;
+};
+
+const hasOverlapForEmployee = ({
+  employeeId,
+  start,
+  end,
+  shifts,
+  excludeShiftId = null
+}) => {
+  return (shifts || []).some((s) => {
+    if (Number(s.employeeId) !== Number(employeeId)) return false;
+    if (excludeShiftId && Number(s.id) === Number(excludeShiftId)) return false;
+
+    const sStart = new Date(s.startAt);
+    const sEnd = new Date(s.endAt);
+
+    return overlaps(start, end, sStart, sEnd);
+  });
 };
 
 // ---- business rules ----
@@ -107,12 +129,9 @@ const EmployeeFilterDropdown = ({
       }
     };
 
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener("pointerdown", handleClickOutside);
+    return () => document.removeEventListener("pointerdown", handleClickOutside);
   }, []);
-
-  const selectAll = () => setSelectedIds(new Set(employees.map((e) => e.id)));
-  const clearAll = () => setSelectedIds(new Set());
 
   return (
     <div ref={wrapperRef} style={{ position: "relative" }}>
@@ -281,6 +300,15 @@ const AdminShiftsCalendar = () => {
     start: "",
     end: "",
     employees: ""
+  });
+
+  const [deleteModal, setDeleteModal] = useState({
+    open: false,
+    shiftId: null,
+    title: "",
+    employeeName: "",
+    loading: false,
+    error: ""
   });
 
   const assignAllSelected = employees.length > 0 && assignIds.size === employees.length;
@@ -484,6 +512,48 @@ const AdminShiftsCalendar = () => {
       if (!(e > s)) {
         errorsCopy.end = "End must be after Start";
         valid = false;
+      } else {
+        // work window validation
+        if (!isWithinWorkWindow(s, e)) {
+          errorsCopy.start = "Start/End must be within 06:00-22:00";
+          errorsCopy.end = "Start/End must be within 06:00-22:00";
+          valid = false;
+        }
+        // max duration validation
+        if (!isMaxHoursOk(s, e)) {
+          errorsCopy.end = `Shift cannot exceed ${MAX_SHIFT_HOURS} hours`;
+          valid = false;
+        }
+      }
+    }
+
+    // overlap rule
+    if (startDate && startTime && endDate && endTime) {
+      const s = buildLocalDateFromParts(startDate, startTime);
+      const e = buildLocalDateFromParts(endDate, endTime);
+
+      if (e > s) {
+        const idsToCheck = mode === "EDIT"
+          ? [Array.from(assignIds)[0]]
+          : Array.from(assignIds);
+
+        const excludeId = mode === "EDIT" ? Number(editingShiftId) : null;
+
+        const anyOverlap = idsToCheck.some((empId) =>
+          hasOverlapForEmployee({
+            employeeId: empId,
+            start: s,
+            end: e,
+            shifts: allShifts,
+            excludeShiftId: excludeId
+          })
+        );
+
+        if (anyOverlap) {
+          errorsCopy.start = "Overlaps existing shift for selected employee";
+          errorsCopy.end = "Overlaps existing shift for selected employee";
+          valid = false;
+        }
       }
     }
 
@@ -543,29 +613,69 @@ const AdminShiftsCalendar = () => {
       closeModal();
     } catch (e) {
       const msg = e?.response?.data?.message || e?.response?.data || "Save failed.";
-      alert(msg);
+
+      if (typeof msg === "string" && msg.toLowerCase().includes("overlaps")) {
+        setFormErrors((prev) => ({
+          ...prev,
+          start: msg,
+          end: msg
+        }));
+        return;
+      }
+
+      setErrorMsg(typeof msg === "string" ? msg : "Save failed.");
+
       console.log("STATUS:", e?.response?.status);
       console.log("DATA:", JSON.stringify(e?.response?.data, null, 2));
     }
   };
 
-  const remove = async () => {
+  const openDeleteModal = () => {
     if (mode !== "EDIT" || !editingShiftId) return;
-    const ok = window.confirm("Delete this shift?");
-    if (!ok) return;
+
+    const s = (allShifts || []).find((x) => Number(x.id) === Number(editingShiftId));
+    const emp = s ? employees.find((e) => Number(e.id) === Number(s.employeeId)) : null;
+
+    setDeleteModal({
+      open: true,
+      shiftId: Number(editingShiftId),
+      title: s?.title || title || "this shift",
+      employeeName: emp ? `${emp.firstName} ${emp.lastName}` : "",
+      loading: false,
+      error: ""
+    });
+  };
+
+  const closeDeleteModal = () => {
+    setDeleteModal((p) => ({
+      ...p,
+      open: false,
+      shiftId: null,
+      loading: false,
+      error: ""
+    }));
+  };
+
+  const removeShiftConfirmed = async () => {
+    if (!deleteModal.shiftId) return;
+
+    setDeleteModal((p) => ({ ...p, loading: true, error: "" }));
 
     try {
-      await deleteShift(editingShiftId);
+      await deleteShift(deleteModal.shiftId);
 
       const shiftsRes = await getAllShifts();
       setAllShifts(shiftsRes.data || []);
 
+      closeDeleteModal();
       closeModal();
     } catch (e) {
       const msg = e?.response?.data?.message || e?.response?.data || "Delete failed.";
-      alert(msg);
-      console.log("STATUS:", e?.response?.status);
-      console.log("DATA:", JSON.stringify(e?.response?.data, null, 2));
+      setDeleteModal((p) => ({
+        ...p,
+        loading: false,
+        error: typeof msg === "string" ? msg : "Delete failed."
+      }));
     }
   };
 
@@ -575,17 +685,31 @@ const AdminShiftsCalendar = () => {
     const e = ev.end;
 
     if (!s || !e) {
-      alert("Invalid dates.");
       changeInfo.revert();
       return;
     }
+
     if (!isWithinWorkWindow(s, e)) {
-      alert("Shift must be between 06:00 and 22:00.");
       changeInfo.revert();
       return;
     }
+
     if (!isMaxHoursOk(s, e)) {
-      alert("Shift cannot exceed 8 hours.");
+      changeInfo.revert();
+      return;
+    }
+
+    const empId = Number(ev.extendedProps.employeeId);
+
+    const overlap = hasOverlapForEmployee({
+      employeeId: empId,
+      start: s,
+      end: e,
+      shifts: allShifts,
+      excludeShiftId: Number(ev.id)
+    });
+
+    if (overlap) {
       changeInfo.revert();
       return;
     }
@@ -606,8 +730,7 @@ const AdminShiftsCalendar = () => {
       const shiftsRes = await getAllShifts();
       setAllShifts(shiftsRes.data || []);
     } catch (e2) {
-      const msg = e2?.response?.data?.message || e2?.response?.data || "Update failed.";
-      alert(msg);
+      console.log("Update failed:", e2?.response?.data || e2);
       changeInfo.revert();
     }
   };
@@ -709,6 +832,11 @@ const AdminShiftsCalendar = () => {
               allDaySlot={false}
               expandRows={false}
               contentHeight="100%"
+
+              longPressDelay={250}
+              selectLongPressDelay={250}
+              eventLongPressDelay={250}
+              eventDragMinDistance={5}
             />
           </div>
           <div className="form-text mt-2">
@@ -1016,7 +1144,7 @@ const AdminShiftsCalendar = () => {
               <div className="d-flex justify-content-between align-items-center mt-4">
                 <div>
                   {mode === "EDIT" && (
-                    <button className="btn btn-danger" onClick={remove}>
+                    <button className="btn btn-danger" onClick={openDeleteModal}>
                       Delete
                     </button>
                   )}
@@ -1030,6 +1158,84 @@ const AdminShiftsCalendar = () => {
                     Save
                   </button>
                 </div>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+      {deleteModal.open && (
+        <>
+          {/* Dark overlay */}
+          <div
+            style={{
+              position: "fixed",
+              inset: 0,
+              backgroundColor: "rgba(0, 0, 0, 0.55)",
+              backdropFilter: "blur(2px)",
+              zIndex: 1060
+            }}
+            onClick={deleteModal.loading ? undefined : closeDeleteModal}
+          />
+
+          {/* Centered modal */}
+          <div
+            style={{
+              position: "fixed",
+              inset: 0,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              zIndex: 1070,
+              padding: "14px"
+            }}
+          >
+            <div
+              className="bg-white rounded shadow-lg"
+              style={{
+                width: "100%",
+                maxWidth: "420px",
+                padding: "24px"
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h5 className="mb-3 text-danger">Confirm Delete</h5>
+
+              <p className="mb-2">
+                Delete shift <strong>{deleteModal.title}</strong>
+                {deleteModal.employeeName ? (
+                  <>
+                    {" "}for <strong>{deleteModal.employeeName}</strong>
+                  </>
+                ) : null}
+                ?
+              </p>
+
+              <div className="text-muted" style={{ fontSize: 13 }}>
+                This action cannot be undone.
+              </div>
+
+              {deleteModal.error && (
+                <div className="alert alert-danger mt-3 mb-0">
+                  {deleteModal.error}
+                </div>
+              )}
+
+              <div className="d-flex justify-content-end gap-2 mt-4">
+                <button
+                  className="btn btn-secondary"
+                  onClick={closeDeleteModal}
+                  disabled={deleteModal.loading}
+                >
+                  Cancel
+                </button>
+
+                <button
+                  className="btn btn-danger"
+                  onClick={removeShiftConfirmed}
+                  disabled={deleteModal.loading}
+                >
+                  {deleteModal.loading ? "Deleting..." : "Delete"}
+                </button>
               </div>
             </div>
           </div>

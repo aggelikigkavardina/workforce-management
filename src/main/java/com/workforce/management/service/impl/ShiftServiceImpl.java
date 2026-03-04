@@ -12,10 +12,12 @@ import com.workforce.management.service.CurrentUserService;
 import com.workforce.management.service.ShiftService;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
-import java.time.Instant;
+import java.time.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -27,10 +29,14 @@ public class ShiftServiceImpl implements ShiftService {
     private final EmployeeRepository employeeRepository;
     private final CurrentUserService currentUserService;
 
+    private static final int MAX_SHIFT_HOURS = 8;
+    private static final LocalTime WORK_START = LocalTime.of(6, 0);
+    private static final LocalTime WORK_END = LocalTime.of(22, 0);
+
     @Override
     @Transactional
     public ShiftDto createShift(ShiftDto dto) {
-        validateRange(dto.getStartAt(), dto.getEndAt());
+        validateShift(dto.getStartAt(), dto.getEndAt());
 
         Employee employee = employeeRepository.findById(dto.getEmployeeId())
                 .orElseThrow(() -> new ResourceNotFoundException("Employee not found"));
@@ -52,7 +58,7 @@ public class ShiftServiceImpl implements ShiftService {
         Shift shift = shiftRepository.findById(shiftId)
                 .orElseThrow(() -> new ResourceNotFoundException("Shift not found"));
 
-        validateRange(dto.getStartAt(), dto.getEndAt());
+        validateShift(dto.getStartAt(), dto.getEndAt());
 
         shift.setTitle(dto.getTitle());
         shift.setLocation(dto.getLocation());
@@ -105,10 +111,27 @@ public class ShiftServiceImpl implements ShiftService {
                 .collect(Collectors.toList());
     }
 
-    private void validateRange(Instant start, Instant end) {
-        if (start == null || end == null) return;
-        if (!end.isAfter(start)) {
-            throw new BadRequestException("Start time must be before end time");
+    public void validateShift(Instant startAt, Instant endAt) {
+        if (startAt == null || endAt == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Start and end are required.");
+        }
+
+        if (!endAt.isAfter(startAt)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "End must be after start.");
+        }
+
+        long minutes = Duration.between(startAt, endAt).toMinutes();
+        if (minutes > MAX_SHIFT_HOURS * 60L) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Shift cannot exceed 8 hours.");
+        }
+        ZonedDateTime s = startAt.atZone(ZoneId.of("Europe/Athens"));
+        ZonedDateTime e = endAt.atZone(ZoneId.of("Europe/Athens"));
+
+        LocalTime st = s.toLocalTime();
+        LocalTime en = e.toLocalTime();
+
+        if (st.isBefore(WORK_START) || en.isAfter(WORK_END)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Shift must be between 06:00 and 22:00.");
         }
     }
 }
