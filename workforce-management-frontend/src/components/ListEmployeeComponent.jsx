@@ -1,9 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { deleteEmployee, listEmployees } from '../services/EmployeeService';
+import { deleteEmployee, listEmployees, getEmployee } from '../services/EmployeeService';
 import { isAdminUser } from '../services/AuthService';
 import { Eye, Pencil, Trash2, Plus, Search } from 'lucide-react';
-import { getEmployee } from "../services/EmployeeService";
 
 const ListEmployeeComponent = () => {
   const [employees, setEmployees] = useState([]);
