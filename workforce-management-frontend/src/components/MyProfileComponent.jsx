@@ -294,9 +294,11 @@ const MyProfileComponent = () => {
           <div className="card shadow-sm">
             <div className="card-body">
               <div className="d-flex justify-content-between align-items-start">
-                <div>
-                  <h3 className="card-title mb-1">My Profile</h3>
-                  <div className="text-muted">{admin ? "Admin" : "Employee"}</div>
+                <div className="position-relative">
+                  <div className="text-center">
+                    <h3 className="card-title mb-1">My Profile</h3>
+                    <div className="text-muted">{admin ? "Admin" : "Employee"}</div>
+                  </div>
                 </div>
               </div>
 
@@ -327,12 +329,6 @@ const MyProfileComponent = () => {
                   {errors.general && <div className="alert alert-danger">{errors.general}</div>}
 
                   {infoMsg && <div className="alert alert-warning">{infoMsg}</div>}
-
-                  {!isDirty && (
-                    <div className="alert alert-info">
-                      No changes detected. Use <strong>Cancel</strong> to exit edit mode.
-                    </div>
-                  )}
 
                   {admin && (
                     <>
@@ -390,7 +386,7 @@ const MyProfileComponent = () => {
                         setPhone(e.target.value);
                         clearInfo();
                       }}
-                      placeholder="69XXXXXXXX"
+                      placeholder="69.."
                     />
                     {errors.phone && <div className="invalid-feedback">{errors.phone}</div>}
                   </div>
@@ -415,10 +411,10 @@ const MyProfileComponent = () => {
                   <div className="form-group mb-2">
                     <label>Current Password:</label>
 
-                    <div className="position-relative">
+                    <div className="input-group">
                       <input
                         type={showCurrentPassword ? "text" : "password"}
-                        className={`form-control pe-5 ${errors.currentPassword ? "is-invalid" : ""}`}
+                        className={`form-control ${(errors.currentPassword) ? "is-invalid" : ""}`}
                         value={currentPassword}
                         onChange={(e) => {
                           setCurrentPassword(e.target.value);
@@ -428,34 +424,29 @@ const MyProfileComponent = () => {
                       />
 
                       <span
+                        className="input-group-text"
+                        style={{ cursor: "pointer" }}
                         onClick={() => setShowCurrentPassword((prev) => !prev)}
-                        style={{
-                          position: "absolute",
-                          right: "10px",
-                          top: "50%",
-                          transform: "translateY(-50%)",
-                          cursor: "pointer",
-                          color: "#6c757d",
-                        }}
+                        title={showCurrentPassword ? "Hide password" : "Show password"}
                       >
                         {showCurrentPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                       </span>
-
-                      {errors.currentPassword && (
-                        <div className="invalid-feedback d-block">
-                          {errors.currentPassword}
-                        </div>
-                      )}
                     </div>
+
+                    {errors.currentPassword && (
+                      <div className="invalid-feedback d-block">
+                        {errors.currentPassword}
+                      </div>
+                    )}
                   </div>
 
                   <div className="form-group mb-3">
                     <label>New Password:</label>
 
-                    <div className="position-relative">
+                    <div className="input-group">
                       <input
                         type={showNewPassword ? "text" : "password"}
-                        className={`form-control pe-5 ${errors.newPassword ? "is-invalid" : ""}`}
+                        className={`form-control ${(errors.newPassword) ? "is-invalid" : ""}`}
                         value={newPassword}
                         onChange={(e) => {
                           setNewPassword(e.target.value);
@@ -465,25 +456,20 @@ const MyProfileComponent = () => {
                       />
 
                       <span
+                        className="input-group-text"
+                        style={{ cursor: "pointer" }}
                         onClick={() => setShowNewPassword((prev) => !prev)}
-                        style={{
-                          position: "absolute",
-                          right: "10px",
-                          top: "50%",
-                          transform: "translateY(-50%)",
-                          cursor: "pointer",
-                          color: "#6c757d",
-                        }}
+                        title={showNewPassword ? "Hide password" : "Show password"}
                       >
                         {showNewPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                       </span>
-
-                      {errors.newPassword && (
-                        <div className="invalid-feedback d-block">
-                          {errors.newPassword}
-                        </div>
-                      )}
                     </div>
+
+                    {errors.newPassword && (
+                      <div className="invalid-feedback d-block">
+                        {errors.newPassword}
+                      </div>
+                    )}
                   </div>
 
                   {saveMsg && <div className="alert alert-success mt-2">{saveMsg}</div>}
