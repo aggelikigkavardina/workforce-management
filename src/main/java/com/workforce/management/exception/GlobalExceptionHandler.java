@@ -25,7 +25,7 @@ public class GlobalExceptionHandler {
 
         Map<String, Object> body = new HashMap<>();
         body.put("timestamp", Instant.now().toString());
-        body.put("status", 400);
+        body.put("status", Integer.valueOf(400));
         body.put("error", "Validation failed");
         body.put("fieldErrors", fieldErrors);
 
@@ -36,7 +36,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, Object>> handleNotFound(ResourceNotFoundException ex) {
         Map<String, Object> body = new HashMap<>();
         body.put("timestamp", Instant.now().toString());
-        body.put("status", 404);
+        body.put("status", Integer.valueOf(404));
         body.put("error", ex.getMessage());
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body);
     }
@@ -46,7 +46,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, Object>> handleBadRequest(BadRequestException ex) {
         Map<String, Object> body = new HashMap<>();
         body.put("timestamp", Instant.now().toString());
-        body.put("status", 400);
+        body.put("status", Integer.valueOf(400));
         body.put("error", ex.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
     }
@@ -55,7 +55,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, Object>> handleConflict(ConflictException ex) {
         Map<String, Object> body = new HashMap<>();
         body.put("timestamp", Instant.now().toString());
-        body.put("status", 409);
+        body.put("status", Integer.valueOf(409));
         body.put("error", ex.getMessage());
         return ResponseEntity.status(HttpStatus.CONFLICT).body(body);
     }

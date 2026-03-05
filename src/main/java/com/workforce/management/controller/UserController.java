@@ -2,7 +2,6 @@ package com.workforce.management.controller;
 
 import com.workforce.management.dto.ChangePasswordDto;
 import com.workforce.management.entity.User;
-import com.workforce.management.exception.BadRequestException;
 import com.workforce.management.exception.ResourceNotFoundException;
 import com.workforce.management.repository.UserRepository;
 import jakarta.validation.Valid;
@@ -18,7 +17,6 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
-@CrossOrigin("*")
 public class UserController {
 
     private final UserRepository userRepository;

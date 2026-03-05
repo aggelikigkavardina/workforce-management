@@ -7,7 +7,7 @@ import com.workforce.management.service.EmployeeService;
 import com.workforce.management.validation.OnCreate;
 import com.workforce.management.validation.OnUpdate;
 import jakarta.validation.Valid;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
@@ -16,12 +16,11 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 
-@CrossOrigin("*")
-@AllArgsConstructor
+@RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/employees")
 public class EmployeeController {
-    private EmployeeService employeeService;
+    private final EmployeeService employeeService;
 
     // Build Add Employee REST API
     @PostMapping

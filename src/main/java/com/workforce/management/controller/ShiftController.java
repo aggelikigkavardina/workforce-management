@@ -4,7 +4,7 @@ import com.workforce.management.dto.ShiftDto;
 import com.workforce.management.service.ShiftService;
 import com.workforce.management.validation.OnCreate;
 import com.workforce.management.validation.OnUpdate;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,7 +12,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/shifts")
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class ShiftController {
 
     private final ShiftService shiftService;
