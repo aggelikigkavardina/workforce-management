@@ -7,7 +7,6 @@ import LoginComponent from './components/login_form/LoginComponent'
 import MyProfileComponent from './components/MyProfileComponent'
 import ProtectedRouteComponent from './components/ProtectedRouteComponent'
 import MyShiftsCalendar from './components/MyShiftsCalendar'
-import EmployeeDetailsComponent from './components/EmployeeDetailsComponent'
 import ChangePasswordComponent from './components/ChangePasswordComponent'
 import ForcePasswordChangeGuard from './guards/ForcePasswordChangeGuard'
 import PublicRoute from './guards/PublicRoute'
@@ -24,7 +23,7 @@ function App() {
       <HeaderComponent />
         <Routes>
           <Route element = {<PublicRoute />}>
-            {/* // https://localhost:3030 */}
+            {/* // https://localhost:3000 */}
             <Route path='/' element={<LoginComponent />} />
           </Route>
 
@@ -39,21 +38,20 @@ function App() {
           </Route>
 
           <Route element={<ProtectedRouteComponent allowedRoles={['ROLE_ADMIN']} />}>
-            {/* // https://localhost:3030/employees */}
+            {/* // https://localhost:3000/employees */}
             <Route path='/employees' element={<ListEmployeeComponent />} />
-            {/* // https://localhost:3030/add-employee */}
+            {/* // https://localhost:3000/add-employee */}
             <Route path='/add-employee' element={<EmployeeComponent />} />
-            {/* // https://localhost:3030/edit-employee/1 */}
+            {/* // https://localhost:3000/edit-employee/1 */}
             <Route path='/edit-employee/:id' element={<EmployeeComponent />} />
             <Route path='/shifts' element={<AdminShiftsCalendar />} />
-            <Route path='/employees/:id' element={<EmployeeDetailsComponent />} />
           </Route>
 
           <Route element={<ProtectedRouteComponent allowedRoles={['ROLE_EMPLOYEE']} />}>
             <Route path='/change-password' element={<ChangePasswordComponent />} />
 
             <Route element={<ForcePasswordChangeGuard />}>   
-              {/* // https://localhost:3030/profile */}
+              {/* // https://localhost:3000/profile */}
               <Route path='/my-shifts' element={<MyShiftsCalendar />} />          
             </Route>
           </Route>

@@ -28,9 +28,7 @@ public class EmployeeDto {
     @Size(max = 120, groups = {OnCreate.class, OnUpdate.class}, message = "Email must be <= 120 characters")
     private String email;
 
-    @NotBlank(groups = OnUpdate.class, message = "Password is required")
     @Size(min = 6, max = 64, groups = OnCreate.class, message = "Password must be 6-64 characters")
-    //@JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
 
     @Pattern(

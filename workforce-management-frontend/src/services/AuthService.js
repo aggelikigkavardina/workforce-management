@@ -44,6 +44,10 @@ export const isAdminUser = () => {
   return getUserRole() === "ROLE_ADMIN";
 };
 
+export const isEmployeeUser = () => {
+  return getUserRole() === "ROLE_EMPLOYEE";
+};
+
 export const logout = () => {
   localStorage.removeItem("token");
   localStorage.removeItem("loggedInUser");
