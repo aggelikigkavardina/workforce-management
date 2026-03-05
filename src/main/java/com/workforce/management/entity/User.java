@@ -6,6 +6,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Table(name = "users")
 @Getter
@@ -32,4 +35,10 @@ public class User {
     @OneToOne
     @JoinColumn(name = "employee_id", nullable = false, unique = true)
     private Employee employee;
+
+    @OneToMany(mappedBy = "sender", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<Message> sentMessages = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<ConversationParticipant> conversationParticipants = new ArrayList<>();
 }
