@@ -15,6 +15,7 @@ import com.workforce.management.repository.UserRepository;
 import com.workforce.management.service.EmployeeService;
 import com.workforce.management.util.PasswordGenerator;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @AllArgsConstructor
 public class EmployeeServiceImpl implements EmployeeService {
@@ -35,7 +37,10 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Transactional
     public EmployeeCreateResponse createEmployee(EmployeeDto dto) {
 
+        log.info("Create employee request: email={}", dto != null ? dto.getEmail() : null);
+
         if (userRepository.existsByUsername(dto.getEmail())) {
+            log.warn("Create employee failed: user already exists (email={})", dto.getEmail());
             throw new ConflictException("User already exists");
         }
 
@@ -53,6 +58,9 @@ public class EmployeeServiceImpl implements EmployeeService {
         savedEmployee.setUser(user);
 
         userRepository.save(user);
+
+        log.info("Employee created: employeeId={}, email={}, role={}, mustChangePassword=true",
+                savedEmployee.getId(), savedEmployee.getEmail(), Role.ROLE_EMPLOYEE.name());
 
         return new EmployeeCreateResponse(
                 EmployeeMapper.mapToEmployeeDto(savedEmployee),
@@ -86,6 +94,10 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Transactional
     public EmployeeDto updateEmployee(Long employeeId, EmployeeDto updatedDto) {
 
+        log.info("Update employee request: employeeId={}, newEmail={}",
+                employeeId, updatedDto != null ? updatedDto.getEmail() : null);
+
+
         Employee employee =
                 employeeRepository.findById(employeeId)
                         .orElseThrow(() ->
@@ -99,6 +111,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 
         if (user == null) {
             if (userRepository.existsByUsername(updatedDto.getEmail())) {
+                log.warn("Update employee failed: user already exists (email={})", updatedDto.getEmail());
                 throw new ConflictException("User already exists");
             }
 
@@ -112,10 +125,13 @@ public class EmployeeServiceImpl implements EmployeeService {
         }
         if (updatedDto.getPassword() != null && !updatedDto.getPassword().trim().isEmpty()) {
             user.setPassword(passwordEncoder.encode(updatedDto.getPassword()));
+            log.info("Employee password updated: employeeId={}", employeeId);
         }
 
         Employee updated = employeeRepository.save(employee);
         userRepository.save(user);
+
+        log.info("Employee updated: employeeId={}, email={}", updated.getId(), updated.getEmail());
 
         return EmployeeMapper.mapToEmployeeDto(updated);
     }
@@ -123,6 +139,8 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     @Transactional
     public void deleteEmployee(Long employeeId) {
+
+        log.warn("Delete employee request: employeeId={}", employeeId);
 
         Employee employee =
                 employeeRepository.findById(employeeId)
@@ -136,11 +154,15 @@ public class EmployeeServiceImpl implements EmployeeService {
         }
 
         employeeRepository.delete(employee);
+
+        log.warn("Employee deleted: employeeId={}", employeeId);
     }
 
     @Override
     @Transactional
     public EmployeeDto updateMyProfile(String username, EmployeeProfileUpdateDto dto) {
+
+        log.info("Update my profile request: username={}", username);
 
         Employee employee = employeeRepository.findByEmail(username)
                 .orElseThrow(() -> new ResourceNotFoundException("Employee not found"));
@@ -149,6 +171,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         employee.setAddress(dto.getAddress());
 
         Employee updated = employeeRepository.save(employee);
+        log.info("My profile updated: employeeId={}, email={}", updated.getId(), updated.getEmail());
         return EmployeeMapper.mapToEmployeeDto(updated);
     }
 
@@ -156,11 +179,14 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Transactional
     public String adminResetEmployeePassword(Long employeeId) {
 
+        log.warn("Admin reset password request: employeeId={}", employeeId);
+
         Employee employee = employeeRepository.findById(employeeId)
                 .orElseThrow(() -> new ResourceNotFoundException("Not found"));
 
         User user = employee.getUser();
         if (user == null) {
+            log.warn("Admin reset password failed: user not found for employeeId={}", employeeId);
             throw new ResourceNotFoundException("User not found for employee");
         }
 
@@ -170,6 +196,9 @@ public class EmployeeServiceImpl implements EmployeeService {
         user.setMustChangePassword(true);
 
         userRepository.save(user);
+
+        log.warn("Admin reset password done: employeeId={}, username={}, mustChangePassword=true",
+                employeeId, user.getUsername());
 
         return tempPassword;
     }

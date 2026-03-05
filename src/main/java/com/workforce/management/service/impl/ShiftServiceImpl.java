@@ -11,6 +11,7 @@ import com.workforce.management.repository.ShiftRepository;
 import com.workforce.management.service.CurrentUserService;
 import com.workforce.management.service.ShiftService;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -21,6 +22,7 @@ import java.time.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @AllArgsConstructor
 public class ShiftServiceImpl implements ShiftService {
@@ -36,6 +38,12 @@ public class ShiftServiceImpl implements ShiftService {
     @Override
     @Transactional
     public ShiftDto createShift(ShiftDto dto) {
+
+        log.info("Create shift request: employeeId={}, startAt={}, endAt={}",
+                dto != null ? dto.getEmployeeId() : null,
+                dto != null ? dto.getStartAt() : null,
+                dto != null ? dto.getEndAt() : null);
+
         validateShift(dto.getStartAt(), dto.getEndAt());
 
         Employee employee = employeeRepository.findById(dto.getEmployeeId())
@@ -45,16 +53,29 @@ public class ShiftServiceImpl implements ShiftService {
         shift.setEmployee(employee);
 
         if (shiftRepository.existsOverlappingShift(dto.getEmployeeId(), dto.getStartAt(), dto.getEndAt())) {
+            log.warn("Create shift rejected due to overlap: employeeId={}, startAt={}, endAt={}",
+                    dto.getEmployeeId(), dto.getStartAt(), dto.getEndAt());
             throw new BadRequestException("Shift overlaps with an existing shift for this employee");
         }
 
         Shift saved = shiftRepository.save(shift);
+
+        log.info("Shift created: shiftId={}, employeeId={}, startAt={}, endAt={}",
+                saved.getId(), saved.getEmployee().getId(), saved.getStartAt(), saved.getEndAt());
+
         return ShiftMapper.mapToShiftDto(saved);
     }
 
     @Override
     @Transactional
     public ShiftDto updateShift(Long shiftId, ShiftDto dto) {
+
+        log.info("Update shift request: shiftId={}, employeeId={}, startAt={}, endAt={}",
+                shiftId,
+                dto != null ? dto.getEmployeeId() : null,
+                dto != null ? dto.getStartAt() : null,
+                dto != null ? dto.getEndAt() : null);
+
         Shift shift = shiftRepository.findById(shiftId)
                 .orElseThrow(() -> new ResourceNotFoundException("Shift not found"));
 
@@ -75,19 +96,29 @@ public class ShiftServiceImpl implements ShiftService {
         Long employeeId = dto.getEmployeeId() != null ? dto.getEmployeeId() : shift.getEmployee().getId();
 
         if (shiftRepository.existsOverlappingShiftExcludingId(employeeId, shiftId, dto.getStartAt(), dto.getEndAt())) {
+            log.warn("Update shift rejected due to overlap: shiftId={}, employeeId={}, startAt={}, endAt={}",
+                    shiftId, employeeId, dto.getStartAt(), dto.getEndAt());
             throw new BadRequestException("Shift overlaps with an existing shift for this employee");
         }
 
         Shift updated = shiftRepository.save(shift);
+
+        log.info("Shift updated: shiftId={}, employeeId={}, startAt={}, endAt={}",
+                updated.getId(), updated.getEmployee().getId(), updated.getStartAt(), updated.getEndAt());
+
         return ShiftMapper.mapToShiftDto(updated);
     }
 
     @Override
     @Transactional
     public void deleteShift(Long shiftId) {
+        log.warn("Delete shift request: shiftId={}", shiftId);
+
         Shift shift = shiftRepository.findById(shiftId)
                 .orElseThrow(() -> new ResourceNotFoundException("Shift not found"));
         shiftRepository.delete(shift);
+
+        log.warn("Shift deleted: shiftId={}", shiftId);
     }
 
     @Override
@@ -104,6 +135,8 @@ public class ShiftServiceImpl implements ShiftService {
     @Override
     public List<ShiftDto> getMyShifts() {
         Long myEmployeeId = currentUserService.getLoggedInEmployeeId();
+
+        log.debug("Get my shifts: employeeId={}", myEmployeeId);
 
         return shiftRepository.findByEmployeeIdOrderByStartAtAsc(myEmployeeId)
                 .stream()

@@ -11,8 +11,8 @@ import com.workforce.management.repository.*;
 import com.workforce.management.service.ConversationService;
 import com.workforce.management.service.CurrentUserService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,6 +20,7 @@ import java.time.Instant;
 import java.util.Comparator;
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -42,14 +43,14 @@ public class ConversationServiceImpl implements ConversationService {
         if (current.getRole() == Role.ROLE_ADMIN) return;
 
         participantRepo.findByConversationIdAndUserId(conversationId, current.getId())
-                .orElseThrow(() -> new RuntimeException("Forbidden"));
+                .orElseThrow(() -> new BadRequestException("Forbidden"));
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<ConversationSummaryDto> listMyConversations() {
         User me = currentUserService.getLoggedInUser();
-        if (me.getRole() != Role.ROLE_EMPLOYEE) throw new RuntimeException("Forbidden");
+        if (me.getRole() != Role.ROLE_EMPLOYEE) throw new BadRequestException("Forbidden");
 
         return participantRepo.findAllByUser(me.getId()).stream()
                 .map(cp -> toSummaryDto(cp.getConversation().getId(), me))
@@ -61,7 +62,7 @@ public class ConversationServiceImpl implements ConversationService {
     @Transactional(readOnly = true)
     public List<ConversationSummaryDto> listAllConversations() {
         User me = currentUserService.getLoggedInUser();
-        if (me.getRole() != Role.ROLE_ADMIN) throw new RuntimeException("Forbidden");
+        if (me.getRole() != Role.ROLE_ADMIN) throw new BadRequestException("Forbidden");
 
         return conversationRepo.findAll().stream()
                 .map(c -> toSummaryDto(c.getId(), me))
@@ -80,7 +81,7 @@ public class ConversationServiceImpl implements ConversationService {
         // EMPLOYEE -> ADMIN
         if (me.getRole() == Role.ROLE_EMPLOYEE) {
             User admin = userRepo.findFirstByRole(Role.ROLE_ADMIN)
-                    .orElseThrow(() -> new RuntimeException("Admin user not found"));
+                    .orElseThrow(() -> new ResourceNotFoundException("Admin user not found"));
 
             Conversation c = new Conversation();
             c.setSubject(subject);
@@ -99,20 +100,24 @@ public class ConversationServiceImpl implements ConversationService {
             cpA.setLastReadAt(null);
 
             participantRepo.saveAll(List.of(cpE, cpA));
+
+            log.info("Conversation created by EMPLOYEE: conversationId={}, employeeUser={}, subject='{}'",
+                    c.getId(), me.getUsername(), subject);
+
             return c.getId();
         }
 
         // ADMIN -> EMPLOYEE (by Employee.id)
         if (me.getRole() == Role.ROLE_ADMIN) {
             if (req == null || req.getEmployeeId() == null) {
-                throw new RuntimeException("employeeId is required");
+                throw new ResourceNotFoundException("employeeId is required");
             }
 
             Employee employee = employeeRepo.findById(req.getEmployeeId())
-                    .orElseThrow(() -> new RuntimeException("Employee not found"));
+                    .orElseThrow(() -> new ResourceNotFoundException("Employee not found"));
 
             if (employee.getUser() == null) {
-                throw new RuntimeException("Employee has no user mapped");
+                throw new BadRequestException("Employee has no user mapped");
             }
 
             User employeeUser = employee.getUser();
@@ -134,10 +139,14 @@ public class ConversationServiceImpl implements ConversationService {
             cpE.setLastReadAt(null);
 
             participantRepo.saveAll(List.of(cpA, cpE));
+
+            log.info("Conversation created by ADMIN: conversationId={}, employeeId={}, employeeUser={}, subject='{}'",
+                    c.getId(), employee.getId(), employeeUser.getUsername(), subject);
+
             return c.getId();
         }
 
-        throw new RuntimeException("Forbidden");
+        throw new BadRequestException("Forbidden");
     }
 
     @Override
@@ -147,7 +156,7 @@ public class ConversationServiceImpl implements ConversationService {
         ensureCanAccessConversation(conversationId, me);
 
         Conversation c = conversationRepo.findById(conversationId)
-                .orElseThrow(() -> new RuntimeException("Conversation not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Conversation not found"));
 
         List<Message> messages = messageRepo.findAllByConversationOrdered(conversationId);
 
@@ -160,11 +169,11 @@ public class ConversationServiceImpl implements ConversationService {
         ensureCanAccessConversation(conversationId, me);
 
         String text = (req == null || req.getContent() == null) ? "" : req.getContent().trim();
-        if (text.isBlank()) throw new RuntimeException("Message is empty");
-        if (text.length() > 2000) throw new RuntimeException("Message too long");
+        if (text.isBlank()) throw new BadRequestException("Message is empty");
+        if (text.length() > 2000) throw new BadRequestException("Message too long");
 
         Conversation c = conversationRepo.findById(conversationId)
-                .orElseThrow(() -> new RuntimeException("Conversation not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Conversation not found"));
 
         Message m = new Message();
         m.setConversation(c);
@@ -176,6 +185,9 @@ public class ConversationServiceImpl implements ConversationService {
         c.setUpdatedAt(Instant.now());
         conversationRepo.save(c);
 
+        log.info("Message sent: conversationId={}, sender={}, role={}, length={}",
+                conversationId, me.getUsername(), me.getRole().name(), text.length());
+
         return messageMapper.toDto(m);
     }
 
@@ -186,16 +198,18 @@ public class ConversationServiceImpl implements ConversationService {
 
         ConversationParticipant cp = participantRepo
                 .findByConversationIdAndUserId(conversationId, me.getId())
-                .orElseThrow(() -> new RuntimeException("Participant not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Participant not found"));
 
         cp.setLastReadAt(Instant.now());
         participantRepo.save(cp);
+
+        log.debug("Conversation marked read: conversationId={}, user={}", conversationId, me.getUsername());
     }
 
     // -------- summary builder --------
     private ConversationSummaryDto toSummaryDto(Long conversationId, User current) {
         Conversation c = conversationRepo.findById(conversationId)
-                .orElseThrow(() -> new RuntimeException("Conversation not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Conversation not found"));
 
         Message last = messageRepo.findLastMessage(conversationId, PageRequest.of(0, 1))
                 .stream().findFirst().orElse(null);
