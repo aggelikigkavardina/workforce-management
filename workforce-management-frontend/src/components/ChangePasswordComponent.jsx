@@ -107,11 +107,9 @@ const ChangePasswordComponent = () => {
   };
 
   return (
-    <div className='container'>
-      <br />
-      <br />
-      <div className='row'>
-        <div className='card col-md-6 offset-md-3'>
+    <div className="container d-flex justify-content-center align-items-center" style={{ minHeight: "calc(100vh - 56px)" }}>
+      <div className='row w-100 justify-content-center'>
+        <div className='card shadow-lg border-0 col-12 col-md-6 col-lg-4'>
           <h3 className='text-center mt-3'>Change Password</h3>
 
           <div className='card-body'>

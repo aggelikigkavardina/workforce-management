@@ -228,333 +228,361 @@ const ListEmployeeComponent = () => {
   }
 
   return (
-    <div className='container'>
-      <br /><br />
-      {loadError && (
-        <div className='alert alert-danger'>
-           No employees loaded {loadError}. Console/Network.
-        </div>
-      )}
+    <div className="container py-4">
+      <div className="row justify-content-center">
+        <div className="col-12 col-xl-10">
+        {loadError && (
+          <div className='alert alert-danger'>
+            No employees loaded {loadError}. Console/Network.
+          </div>
+        )}
 
-      {flash.success && (
-        <div className="alert alert-success">
-          {flash.success}
-        </div>
-      )}
+        {flash.success && (
+          <div className="alert alert-success">
+            {flash.success}
+          </div>
+        )}
 
-      {isAdminUser() && (
-        <div className="d-flex justify-content-end mb-3">
-          <button
-            className='btn btn-primary d-flex align-items-center gap-2'
-            onClick={addNewEmployee}
-          >
-            <Plus size={16} />
-            Add Employee
-          </button>
-        </div>
-      )}
-
-      <div className="d-flex flex-wrap gap-2 justify-content-between align-items-center mb-3">
-        <div style={{ minWidth: "240px", flex: 1, position: "relative" }}>
-          <Search
-            size={16}
-            style={{
-              position: "absolute",
-              top: "50%",
-              left: "12px",
-              transform: "translateY(-50%)",
-              color: "#6c757d"
-            }}
-          />
-
-          <input
-            type="text"
-            className="form-control ps-5"
-            placeholder="Search (name, email, phone...)"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        </div>
-      </div> 
-
-      <table className='table table-striped table-bordered table-hover align-middle'>
-        <thead>
-          <tr>
-            <th
-              style={{ cursor: "pointer", userSelect: "none", background: sortBy === "firstName" ? "rgba(0,0,0,0.04)" : undefined }}
-              onClick={() => handleSort("firstName")}
+        {isAdminUser() && (
+          <div className="d-flex justify-content-end mb-3">
+            <button
+              className='btn btn-primary d-flex align-items-center gap-2'
+              onClick={addNewEmployee}
             >
-              <div className="d-flex justify-content-between align-items-center">
-                <span>First Name</span>
-                <span>{sortIcon("firstName")}</span>
-              </div>
-            </th>
+              <Plus size={16} />
+              Add Employee
+            </button>
+          </div>
+        )}
 
-            <th
-              style={{ cursor: "pointer", userSelect: "none", background: sortBy === "firstName" ? "rgba(0,0,0,0.04)" : undefined }}
-              onClick={() => handleSort("lastName")}
-            >
-              <div className="d-flex justify-content-between align-items-center">
-                <span>Last Name</span>
-                <span>{sortIcon("lastName")}</span>
-              </div>
-            </th>
+        <div className="d-flex flex-wrap gap-2 justify-content-between align-items-center mb-3">
+          <div style={{ minWidth: "240px", flex: 1, position: "relative" }}>
+            <Search
+              size={16}
+              style={{
+                position: "absolute",
+                top: "50%",
+                left: "12px",
+                transform: "translateY(-50%)",
+                color: "#6c757d"
+              }}
+            />
 
-            <th
-              style={{ cursor: "pointer", userSelect: "none", background: sortBy === "firstName" ? "rgba(0,0,0,0.04)" : undefined }}
-              onClick={() => handleSort("email")}
-            >
-              <div className="d-flex justify-content-between align-items-center">
-                <span>Email</span>
-                <span>{sortIcon("email")}</span>
-              </div>
-            </th>
+            <input
+              type="text"
+              className="form-control ps-5"
+              placeholder="Search (name, email, phone...)"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+        </div> 
 
-            <th
-              style={{ cursor: "pointer", userSelect: "none", background: sortBy === "firstName" ? "rgba(0,0,0,0.04)" : undefined }}
-              onClick={() => handleSort("phone")}
-            >
-              <div className="d-flex justify-content-between align-items-center">
-                <span>Phone</span>
-                <span>{sortIcon("phone")}</span>
-              </div>
-            </th>
+        <table
+          className='table table-striped table-bordered table-hover align-middle'
+          style={{ tableLayout: "fixed", width: "100%" }}
+        >
+          <thead>
+            <tr>
+              <th
+                style={{
+                  cursor: "pointer",
+                  userSelect: "none",
+                  background: sortBy === "firstName" ? "rgba(0,0,0,0.04)" : undefined
+                }}
+                onClick={() => handleSort("firstName")}
+              >
+                <div className="d-flex justify-content-between align-items-center">
+                  <span>First Name</span>
+                  <span>{sortIcon("firstName")}</span>
+                </div>
+              </th>
 
-            {isAdminUser() && <th>Actions</th>}
-          </tr>
-        </thead>
-        <tbody>
-          {pagedEmployees.map((employee) => (
-            <tr key={employee.id}
-              style={{ cursor: 'pointer' }}
-              onClick={() => openDetailsModal(employee.id)}
-            >
-              <td>{employee.firstName}</td>
-              <td>{employee.lastName}</td>
-              <td>{employee.email}</td>
-              <td>{employee.phone || "-"}</td>
+              <th
+                style={{
+                  cursor: "pointer",
+                  userSelect: "none",
+                  background: sortBy === "lastName" ? "rgba(0,0,0,0.04)" : undefined
+                }}
+                onClick={() => handleSort("lastName")}
+              >
+                <div className="d-flex justify-content-between align-items-center">
+                  <span>Last Name</span>
+                  <span>{sortIcon("lastName")}</span>
+                </div>
+              </th>
+
+              <th
+                className="d-none d-md-table-cell"
+                style={{
+                  cursor: "pointer",
+                  userSelect: "none",
+                  background: sortBy === "email" ? "rgba(0,0,0,0.04)" : undefined
+                }}
+                onClick={() => handleSort("email")}
+              >
+                <div className="d-flex justify-content-between align-items-center">
+                  <span>Email</span>
+                  <span>{sortIcon("email")}</span>
+                </div>
+              </th>
+
+              <th
+                className="d-none d-md-table-cell"
+                style={{
+                  cursor: "pointer",
+                  userSelect: "none",
+                  background: sortBy === "phone" ? "rgba(0,0,0,0.04)" : undefined
+                }}
+                onClick={() => handleSort("phone")}
+              >
+                <div className="d-flex justify-content-between align-items-center">
+                  <span>Phone</span>
+                  <span>{sortIcon("phone")}</span>
+                </div>
+              </th>
 
               {isAdminUser() && (
-                <td
-                  style={{ width: '1%', whiteSpace: 'nowrap' }}
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <div className='d-flex gap-2'>
-
-                    <button
-                      className='btn btn-link text-secondary p-0'
-                      onClick={() => openDetailsModal(employee.id)}
-                      title='View Details'
-                    >
-                      <Eye size={16} />
-                    </button>
-
-                    <button
-                      className='btn btn-link text-primary p-0'
-                      onClick={() => updateEmployee(employee.id)}
-                      title='Edit Employee'
-                    >
-                      <Pencil size={16} />
-                    </button>
-
-                    <button
-                      className='btn btn-link text-danger p-0'
-                      onClick={() => openDeleteModal(employee)}
-                      title='Delete Employee'
-                    >
-                      <Trash2 size={16} />
-                    </button>
-
-                  </div>
-                </td>
+                <th style={{ width: "110px", whiteSpace: "nowrap" }}>
+                  Actions
+                </th>
               )}
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
 
-      {deleteModal.open && (
-        <>
-          {/* Dark overlay */}
-          <div
-            style={{
-              position: "fixed",
-              inset: 0,
-              backgroundColor: "rgba(0, 0, 0, 0.55)",
-              backdropFilter: "blur(2px)",
-              zIndex: 1040
-            }}
-            onClick={closeDeleteModal}
-          />
+          <tbody>
+            {pagedEmployees.map((employee) => (
+              <tr
+                key={employee.id}
+                style={{ cursor: 'pointer' }}
+                onClick={() => openDetailsModal(employee.id)}
+              >
+                <td>{employee.firstName}</td>
+                <td>{employee.lastName}</td>
+                <td className="d-none d-md-table-cell">{employee.email}</td>
+                <td className="d-none d-md-table-cell">{employee.phone || "-"}</td>
 
-          {/* Centered modal */}
-          <div
-            style={{
-              position: "fixed",
-              inset: 0,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              zIndex: 1050
-            }}
-          >
+                {isAdminUser() && (
+                  <td
+                    style={{ width: "110px", whiteSpace: "nowrap" }}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <div className='d-flex gap-2'>
+                      <button
+                        className='btn btn-link text-secondary p-0'
+                        onClick={() => openDetailsModal(employee.id)}
+                        title='View Details'
+                      >
+                        <Eye size={16} />
+                      </button>
+
+                      <button
+                        className='btn btn-link text-primary p-0'
+                        onClick={() => updateEmployee(employee.id)}
+                        title='Edit Employee'
+                      >
+                        <Pencil size={16} />
+                      </button>
+
+                      <button
+                        className='btn btn-link text-danger p-0'
+                        onClick={() => openDeleteModal(employee)}
+                        title='Delete Employee'
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  </td>
+                )}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+
+        {deleteModal.open && (
+          <>
+            {/* Dark overlay */}
             <div
-              className="bg-white rounded shadow-lg"
               style={{
-                width: "100%",
-                maxWidth: "420px",
-                padding: "24px",
-                animation: "fadeIn 0.2s ease-out"
+                position: "fixed",
+                inset: 0,
+                backgroundColor: "rgba(0, 0, 0, 0.55)",
+                backdropFilter: "blur(2px)",
+                zIndex: 1040
+              }}
+              onClick={closeDeleteModal}
+            />
+
+            {/* Centered modal */}
+            <div
+              style={{
+                position: "fixed",
+                inset: 0,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                zIndex: 1050
               }}
             >
-              <h5 className="mb-3 text-danger">Confirm Delete</h5>
+              <div
+                className="bg-white rounded shadow-lg"
+                style={{
+                  width: "100%",
+                  maxWidth: "420px",
+                  padding: "24px",
+                  animation: "fadeIn 0.2s ease-out"
+                }}
+              >
+                <h5 className="mb-3 text-danger">Confirm Delete</h5>
 
-              <p>
-                Are you sure you want to delete{" "}
-                <strong>
-                  {deleteModal.employee?.firstName}{" "}
-                  {deleteModal.employee?.lastName}
-                </strong>
-                ?
-              </p>
+                <p>
+                  Are you sure you want to delete{" "}
+                  <strong>
+                    {deleteModal.employee?.firstName}{" "}
+                    {deleteModal.employee?.lastName}
+                  </strong>
+                  ?
+                </p>
 
-              {deleteModal.error && (
-                <div className="alert alert-danger">
-                  {deleteModal.error}
+                {deleteModal.error && (
+                  <div className="alert alert-danger">
+                    {deleteModal.error}
+                  </div>
+                )}
+
+                <div className="d-flex justify-content-end gap-2 mt-3">
+                  <button
+                    className="btn btn-secondary"
+                    onClick={closeDeleteModal}
+                    disabled={deleteModal.loading}
+                  >
+                    Cancel
+                  </button>
+
+                  <button
+                    className="btn btn-danger"
+                    onClick={removeEmployeeConfirmed}
+                    disabled={deleteModal.loading}
+                  >
+                    {deleteModal.loading ? "Deleting..." : "Delete"}
+                  </button>
                 </div>
-              )}
-
-              <div className="d-flex justify-content-end gap-2 mt-3">
-                <button
-                  className="btn btn-secondary"
-                  onClick={closeDeleteModal}
-                  disabled={deleteModal.loading}
-                >
-                  Cancel
-                </button>
-
-                <button
-                  className="btn btn-danger"
-                  onClick={removeEmployeeConfirmed}
-                  disabled={deleteModal.loading}
-                >
-                  {deleteModal.loading ? "Deleting..." : "Delete"}
-                </button>
               </div>
             </div>
-          </div>
-        </>
-      )}
+          </>
+        )}
 
-      {sortedEmployees.length > pageSize && (
-        <div className="d-flex justify-content-center align-items-center gap-3 mt-3">
-          <button
-            className="btn btn-outline-secondary"
-            onClick={() => setPage((p) => Math.max(0, p - 1))}
-            disabled={page === 0}
-          >
-            ← Prev
-          </button>
-
-          <span>
-            Page <strong>{page + 1}</strong> of <strong>{totalPages}</strong>
-          </span>
-
-          <button
-            className="btn btn-outline-secondary"
-            onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
-            disabled={page >= totalPages - 1}
-          >
-            Next →
-          </button>
-        </div>
-      )}
-
-      {detailsModal.open && (
-        <>
-          {/* overlay */}
-          <div
-            style={{
-              position: "fixed",
-              inset: 0,
-              backgroundColor: "rgba(0,0,0,0.55)",
-              backdropFilter: "blur(2px)",
-              zIndex: 1040
-            }}
-            onClick={closeDetailsModal}
-          />
-
-          {/* modal center */}
-          <div
-            style={{
-              position: "fixed",
-              inset: 0,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              zIndex: 1050
-            }}
-          >
-            <div
-              className="bg-white rounded shadow-lg"
-              style={{
-                width: "100%",
-                maxWidth: "520px",
-                padding: "22px"
-              }}
-              onClick={(e) => e.stopPropagation()} 
+        {sortedEmployees.length > pageSize && (
+          <div className="d-flex justify-content-center align-items-center gap-3 mt-3">
+            <button
+              className="btn btn-outline-secondary"
+              onClick={() => setPage((p) => Math.max(0, p - 1))}
+              disabled={page === 0}
             >
-              <div className="d-flex justify-content-between align-items-center mb-2">
-                <h5 className="m-0">Employee Details</h5>
-                <button className="btn-close" onClick={closeDetailsModal} />
-              </div>
+              ← Prev
+            </button>
 
-              {detailsModal.loading && <div>Loading...</div>}
+            <span>
+              Page <strong>{page + 1}</strong> of <strong>{totalPages}</strong>
+            </span>
 
-              {!detailsModal.loading && detailsModal.error && (
-                <div className="alert alert-danger">{detailsModal.error}</div>
-              )}
-
-              {!detailsModal.loading && !detailsModal.error && detailsModal.employee && (
-                <>
-                  <div className="mb-2">
-                    <strong>First Name:</strong> {detailsModal.employee.firstName}
-                  </div>
-                  <div className="mb-2">
-                    <strong>Last Name:</strong> {detailsModal.employee.lastName}
-                  </div>
-                  <div className="mb-2">
-                    <strong>Email:</strong> {detailsModal.employee.email}
-                  </div>
-                  <div className="mb-2">
-                    <strong>Phone:</strong> {detailsModal.employee.phone || "-"}
-                  </div>
-                  <div className="mb-2">
-                    <strong>Address:</strong> {detailsModal.employee.address || "-"}
-                  </div>
-
-                  <div className="d-flex justify-content-end gap-2 mt-3">
-                    <button className="btn btn-secondary" onClick={closeDetailsModal}>
-                      Close
-                    </button>
-                    <button className="btn btn-primary" onClick={goEditFromModal}>
-                      Edit
-                    </button>
-                  </div>
-                </>
-              )}
-            </div>
+            <button
+              className="btn btn-outline-secondary"
+              onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+              disabled={page >= totalPages - 1}
+            >
+              Next →
+            </button>
           </div>
-        </>
-      )}
+        )}
 
-      {!loadError && sortedEmployees.length === 0 && (
-        <div className="text-muted">
-          {search.trim()
-            ? "No employees match your search."
-            : "Employees don't exist or data didn't load."}
+        {detailsModal.open && (
+          <>
+            {/* overlay */}
+            <div
+              style={{
+                position: "fixed",
+                inset: 0,
+                backgroundColor: "rgba(0,0,0,0.55)",
+                backdropFilter: "blur(2px)",
+                zIndex: 1040
+              }}
+              onClick={closeDetailsModal}
+            />
+
+            {/* modal center */}
+            <div
+              style={{
+                position: "fixed",
+                inset: 0,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                zIndex: 1050
+              }}
+            >
+              <div
+                className="bg-white rounded shadow-lg"
+                style={{
+                  width: "100%",
+                  maxWidth: "520px",
+                  padding: "22px"
+                }}
+                onClick={(e) => e.stopPropagation()} 
+              >
+                <div className="d-flex justify-content-between align-items-center mb-2">
+                  <h5 className="m-0">Employee Details</h5>
+                  <button className="btn-close" onClick={closeDetailsModal} />
+                </div>
+
+                {detailsModal.loading && <div>Loading...</div>}
+
+                {!detailsModal.loading && detailsModal.error && (
+                  <div className="alert alert-danger">{detailsModal.error}</div>
+                )}
+
+                {!detailsModal.loading && !detailsModal.error && detailsModal.employee && (
+                  <>
+                    <div className="mb-2">
+                      <strong>First Name:</strong> {detailsModal.employee.firstName}
+                    </div>
+                    <div className="mb-2">
+                      <strong>Last Name:</strong> {detailsModal.employee.lastName}
+                    </div>
+                    <div className="mb-2">
+                      <strong>Email:</strong> {detailsModal.employee.email}
+                    </div>
+                    <div className="mb-2">
+                      <strong>Phone:</strong> {detailsModal.employee.phone || "-"}
+                    </div>
+                    <div className="mb-2">
+                      <strong>Address:</strong> {detailsModal.employee.address || "-"}
+                    </div>
+
+                    <div className="d-flex justify-content-end gap-2 mt-3">
+                      <button className="btn btn-secondary" onClick={closeDetailsModal}>
+                        Close
+                      </button>
+                      <button className="btn btn-primary" onClick={goEditFromModal}>
+                        Edit
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+          </>
+        )}
+
+        {!loadError && sortedEmployees.length === 0 && (
+          <div className="text-muted">
+            {search.trim()
+              ? "No employees match your search."
+              : "Employees don't exist or data didn't load."}
+          </div>
+        )}
         </div>
-      )}
+      </div>
     </div>
   );
 };

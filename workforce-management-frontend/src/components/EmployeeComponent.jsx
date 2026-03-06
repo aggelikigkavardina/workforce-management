@@ -16,7 +16,7 @@ const EmployeeComponent = () => {
   const [address, setAddress] = useState("");
 
   const { id } = useParams();
-  const navigator = useNavigate();
+  const navigate = useNavigate();
 
   const [errors, setErrors] = useState({
     firstName: "",
@@ -27,9 +27,11 @@ const EmployeeComponent = () => {
   });
 
   // Update-mode reset password UI
-  const [resetMsg, setResetMsg] = useState(null);
   const [resetLoading, setResetLoading] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [showResetSuccessModal, setShowResetSuccessModal] = useState(false);
+  const [resetTempPassword, setResetTempPassword] = useState(null);
+  const [resetError, setResetError] = useState("");
 
   // Add-mode create success modal
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -39,9 +41,9 @@ const EmployeeComponent = () => {
     if (id) {
       getEmployee(id)
         .then((response) => {
-          setFirstName(response.data.firstName);
-          setLastName(response.data.lastName);
-          setEmail(response.data.email);
+          setFirstName(response.data.firstName || "");
+          setLastName(response.data.lastName || "");
+          setEmail(response.data.email || "");
           setPhone(response.data.phone || "");
           setAddress(response.data.address || "");
         })
@@ -51,53 +53,49 @@ const EmployeeComponent = () => {
 
   const validateForm = () => {
     let valid = true;
-    const errorsCopy = { ...errors };
+    const errorsCopy = {
+      firstName: "",
+      lastName: "",
+      email: "",
+      phone: "",
+      address: "",
+    };
 
     if (!firstName.trim()) {
       errorsCopy.firstName = "First name is required";
       valid = false;
-    } else if (firstName.length > 50) {
+    } else if (firstName.trim().length > 50) {
       errorsCopy.firstName = "Max 50 characters";
       valid = false;
-    } else {
-      errorsCopy.firstName = "";
     }
 
     if (!lastName.trim()) {
       errorsCopy.lastName = "Last name is required";
       valid = false;
-    } else if (lastName.length > 50) {
+    } else if (lastName.trim().length > 50) {
       errorsCopy.lastName = "Max 50 characters";
       valid = false;
-    } else {
-      errorsCopy.lastName = "";
     }
 
     if (!email.trim()) {
       errorsCopy.email = "Email is required";
       valid = false;
-    } else if (!isValidEmail(email)) {
+    } else if (!isValidEmail(email.trim())) {
       errorsCopy.email = "Invalid email format";
       valid = false;
-    } else if (email.length > 120) {
+    } else if (email.trim().length > 120) {
       errorsCopy.email = "Max 120 characters";
       valid = false;
-    } else {
-      errorsCopy.email = "";
     }
 
     if (phone.trim() && !/^69\d{8}$/.test(phone.trim())) {
-      errorsCopy.phone = "Phone must be in format 69..";
+      errorsCopy.phone = "Phone must be in format 69XXXXXXXX";
       valid = false;
-    } else {
-      errorsCopy.phone = "";
     }
 
     if (address.trim().length > 255) {
       errorsCopy.address = "Address must be <= 255 characters";
       valid = false;
-    } else {
-      errorsCopy.address = "";
     }
 
     setErrors(errorsCopy);
@@ -106,6 +104,7 @@ const EmployeeComponent = () => {
 
   const saveOrUpdateEmployee = (e) => {
     e.preventDefault();
+
     if (!validateForm()) return;
 
     const employee = {
@@ -118,7 +117,7 @@ const EmployeeComponent = () => {
 
     if (id) {
       updateEmployee(id, { ...employee, id: Number(id) })
-        .then(() => navigator("/employees"))
+        .then(() => navigate("/employees"))
         .catch((error) => {
           console.log("STATUS:", error?.response?.status);
           console.log("DATA:", JSON.stringify(error?.response?.data, null, 2));
@@ -126,7 +125,7 @@ const EmployeeComponent = () => {
     } else {
       createEmployee(employee)
         .then((response) => {
-          const temp = response.data.temporaryPassword;
+          const temp = response?.data?.temporaryPassword || null;
           setTempPassword(temp);
           setShowCreateModal(true);
         })
@@ -140,17 +139,21 @@ const EmployeeComponent = () => {
   const handleResetPassword = async () => {
     if (!id) return;
 
-    setResetMsg(null);
+    setResetError("");
     setResetLoading(true);
 
     try {
       const res = await resetEmployeePassword(id);
-      const temp = res?.data?.temporaryPassword;
+      console.log("RESET RES DATA:", res?.data);
+      const temp = res?.data?.temporaryPassword ?? res?.data?.tempPassword ?? res?.data?.password;
+      setResetTempPassword(temp || "(no password returned)");
+      setShowResetSuccessModal(true);
 
-      if (temp) setResetMsg(temp);
-      else setResetMsg("Temporary password generated.");
-    } catch {
-      setResetMsg("Failed to reset password.");
+      setResetTempPassword(temp);
+      setShowResetSuccessModal(true);
+    } catch (error) {
+      console.error(error);
+      setResetError("Failed to reset password.");
     } finally {
       setResetLoading(false);
     }
@@ -169,6 +172,7 @@ const EmployeeComponent = () => {
         </h2>
       );
     }
+
     return (
       <h2 className="text-center" style={{ marginTop: "10px" }}>
         Add Employee
@@ -176,16 +180,19 @@ const EmployeeComponent = () => {
     );
   };
 
-  const goBack = () => navigator("/employees");
+  const goBack = () => navigate("/employees");
 
   const closeCreateModal = () => setShowCreateModal(false);
 
   return (
-    <div className="container">
-      <br /> <br />
-      <div className="row">
-        <div className="card col-md-6 offset-md-3 offset-md-3">
+    <div
+      className="container d-flex justify-content-center align-items-center"
+      style={{ minHeight: "100vh" }}
+    >
+      <div className="row w-100 justify-content-center">
+        <div className="card shadow-lg border-0 col-12 col-md-8 col-lg-6">
           {pageTitle()}
+
           <div className="card-body">
             <form>
               <div className="form-group mb-2">
@@ -195,7 +202,9 @@ const EmployeeComponent = () => {
                   placeholder="Enter Employee First Name"
                   name="firstName"
                   value={firstName}
-                  className={`form-control ${errors.firstName ? "is-invalid" : ""}`}
+                  className={`form-control ${
+                    errors.firstName ? "is-invalid" : ""
+                  }`}
                   onChange={(e) => setFirstName(e.target.value)}
                 />
                 {errors.firstName && (
@@ -210,7 +219,9 @@ const EmployeeComponent = () => {
                   placeholder="Enter Employee Last Name"
                   name="lastName"
                   value={lastName}
-                  className={`form-control ${errors.lastName ? "is-invalid" : ""}`}
+                  className={`form-control ${
+                    errors.lastName ? "is-invalid" : ""
+                  }`}
                   onChange={(e) => setLastName(e.target.value)}
                 />
                 {errors.lastName && (
@@ -237,7 +248,7 @@ const EmployeeComponent = () => {
                 <label className="form-label">Phone Number:</label>
                 <input
                   type="text"
-                  placeholder="69.."
+                  placeholder="69XXXXXXXX"
                   name="phone"
                   value={phone}
                   className={`form-control ${errors.phone ? "is-invalid" : ""}`}
@@ -255,7 +266,9 @@ const EmployeeComponent = () => {
                   placeholder="Enter Employee Address"
                   name="address"
                   value={address}
-                  className={`form-control ${errors.address ? "is-invalid" : ""}`}
+                  className={`form-control ${
+                    errors.address ? "is-invalid" : ""
+                  }`}
                   onChange={(e) => setAddress(e.target.value)}
                 />
                 {errors.address && (
@@ -263,7 +276,10 @@ const EmployeeComponent = () => {
                 )}
               </div>
 
-              {/* RESET PASSWORD (only on update) */}
+              {resetError && (
+                <div className="alert alert-danger mt-3">{resetError}</div>
+              )}
+
               {id && (
                 <div className="mt-3">
                   <button
@@ -272,35 +288,28 @@ const EmployeeComponent = () => {
                     onClick={() => setShowResetConfirm(true)}
                     disabled={resetLoading}
                   >
-                    Reset Password
+                    {resetLoading ? "Resetting..." : "Reset Password"}
                   </button>
-
-                  {resetMsg && (
-                    <div className="alert alert-success mt-2 d-flex justify-content-between align-items-center">
-                      <div>
-                        Temporary password generated:
-                        <strong className="ms-2" style={{ fontFamily: "monospace" }}>
-                          {resetMsg}
-                        </strong>
-                      </div>
-
-                      <Copy
-                        size={18}
-                        style={{ cursor: "pointer" }}
-                        onClick={() => navigator.clipboard.writeText(resetMsg)}
-                        title="Copy"
-                      />
-                    </div>
-                  )}
                 </div>
               )}
 
-              <div className="d-flex justify-content-between" style={{ marginTop: "16px" }}>
-                <button type="button" className="btn btn-secondary" onClick={goBack}>
+              <div
+                className="d-flex justify-content-between"
+                style={{ marginTop: "16px" }}
+              >
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={goBack}
+                >
                   Back
                 </button>
 
-                <button type="button" className="btn btn-success" onClick={saveOrUpdateEmployee}>
+                <button
+                  type="button"
+                  className="btn btn-success"
+                  onClick={saveOrUpdateEmployee}
+                >
                   Save
                 </button>
               </div>
@@ -309,10 +318,9 @@ const EmployeeComponent = () => {
         </div>
       </div>
 
-      {/* RESET CONFIRM MODAL (update mode) */}
+      {/* RESET CONFIRM MODAL */}
       {id && showResetConfirm && (
         <>
-          {/* Dark overlay */}
           <div
             style={{
               position: "fixed",
@@ -324,7 +332,6 @@ const EmployeeComponent = () => {
             onClick={() => setShowResetConfirm(false)}
           />
 
-          {/* Centered modal */}
           <div
             style={{
               position: "fixed",
@@ -346,7 +353,7 @@ const EmployeeComponent = () => {
             >
               <h5 className="mb-3 text-danger">Confirm Password Reset</h5>
 
-              <p>Are you sure you want to reset this employee's password?</p>
+              <p>Are you sure you want to reset this employee&apos;s password?</p>
 
               <div className="d-flex justify-content-end gap-2 mt-3">
                 <button
@@ -370,10 +377,9 @@ const EmployeeComponent = () => {
         </>
       )}
 
-      {/* CREATE SUCCESS MODAL (add mode) */}
-      {!id && showCreateModal && (
+      {/* RESET SUCCESS MODAL */}
+      {id && showResetSuccessModal && (
         <>
-          {/* Dark overlay */}
           <div
             style={{
               position: "fixed",
@@ -382,10 +388,9 @@ const EmployeeComponent = () => {
               backdropFilter: "blur(2px)",
               zIndex: 1040,
             }}
-            onClick={closeCreateModal}
+            onClick={() => setShowResetSuccessModal(false)}
           />
 
-          {/* Centered modal */}
           <div
             style={{
               position: "fixed",
@@ -405,15 +410,90 @@ const EmployeeComponent = () => {
                 animation: "fadeIn 0.2s ease-out",
               }}
             >
-              <h5 className="mb-3 text-success">Employee created successfully</h5>
+              <h5 className="mb-3 text-success">
+                Password reset successfully
+              </h5>
 
-              <p className="mb-2 fw-semibold">You need to copy this password. </p>
+              <p className="mb-2 fw-semibold">
+                You need to copy this password.
+              </p>
+
+              {resetTempPassword && (
+                <div className="mt-2 mb-3">
+                  <div>
+                    Temporary password:
+                    <strong
+                      className="ms-2"
+                      style={{ fontFamily: "monospace" }}
+                    >
+                      {resetTempPassword}
+                    </strong>
+                  </div>
+                </div>
+              )}
+
+              <div className="d-flex justify-content-end gap-2 mt-3">
+                <button
+                  className="btn btn-primary"
+                  onClick={() => navigate("/employees")}
+                >
+                  Back to list
+                </button>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* CREATE SUCCESS MODAL */}
+      {!id && showCreateModal && (
+        <>
+          <div
+            style={{
+              position: "fixed",
+              inset: 0,
+              backgroundColor: "rgba(0, 0, 0, 0.55)",
+              backdropFilter: "blur(2px)",
+              zIndex: 1040,
+            }}
+            onClick={closeCreateModal}
+          />
+
+          <div
+            style={{
+              position: "fixed",
+              inset: 0,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              zIndex: 1050,
+            }}
+          >
+            <div
+              className="bg-white rounded shadow-lg"
+              style={{
+                width: "100%",
+                maxWidth: "420px",
+                padding: "24px",
+                animation: "fadeIn 0.2s ease-out",
+              }}
+            >
+              <h5 className="mb-3 text-success">
+                Employee created successfully
+              </h5>
+
+              <p className="mb-2 fw-semibold">
+                You need to copy this password.
+              </p>
 
               {tempPassword && (
-                <div className="d-flex justify-content-between align-items-center mt-2 mb-3">
+                <div className="mt-2 mb-3">
                   <div>
-                    Temporary password generated: 
-                    <strong className="ms-2" style={{ fontFamily: "monospace" }}>
+                    Temporary password generated:
+                    <strong
+                      className="ms-2"
+                      style={{ fontFamily: "monospace" }}
+                    >
                       {tempPassword}
                     </strong>
                   </div>
@@ -421,7 +501,10 @@ const EmployeeComponent = () => {
               )}
 
               <div className="d-flex justify-content-end gap-2 mt-3">
-                <button className="btn btn-primary" onClick={() => navigator("/employees")}>
+                <button
+                  className="btn btn-primary"
+                  onClick={() => navigate("/employees")}
+                >
                   Back to list
                 </button>
               </div>

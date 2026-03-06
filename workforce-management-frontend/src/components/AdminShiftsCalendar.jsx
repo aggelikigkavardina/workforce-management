@@ -9,6 +9,19 @@ import { getAllShifts, createShift, updateShift, deleteShift } from "../services
 
 import { Search, X, ChevronDown } from "lucide-react";
 
+// =================== responsive helper ===================
+const useIsMobile = (breakpoint = 768) => {
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth < breakpoint);
+
+  useEffect(() => {
+    const onResize = () => setIsMobile(window.innerWidth < breakpoint);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, [breakpoint]);
+
+  return isMobile;
+};
+
 // ----- helpers -----
 const pad2 = (n) => String(n).padStart(2, "0");
 
@@ -65,6 +78,20 @@ const isMaxHoursOk = (startDate, endDate) => {
   const diffMs = endDate - startDate;
   const diffHours = diffMs / (1000 * 60 * 60);
   return diffHours <= MAX_SHIFT_HOURS;
+};
+
+// ============ typing helpers for mobile text inputs ============
+const normalizeDateInput = (v) => v.replace(/[^\d-]/g, "").slice(0, 10); // YYYY-MM-DD
+const normalizeTimeInput = (v) => v.replace(/[^\d:]/g, "").slice(0, 5);  // HH:MM
+
+const isValidDateStr = (v) => /^\d{4}-\d{2}-\d{2}$/.test(v);
+const isValidTimeStr = (v) => /^([01]\d|2[0-3]):[0-5]\d$/.test(v);
+
+// (optional) smarter typing for time: "0930" -> "09:30"
+const smartTime = (v) => {
+  const digits = v.replace(/[^\d]/g, "").slice(0, 4);
+  if (digits.length <= 2) return digits;
+  return `${digits.slice(0, 2)}:${digits.slice(2)}`.slice(0, 5);
 };
 
 // color palette for employees
@@ -135,7 +162,6 @@ const EmployeeFilterDropdown = ({
 
   return (
     <div ref={wrapperRef} style={{ position: "relative" }}>
-      {/* ONE-LINE DROPDOWN FIELD */}
       <button
         type="button"
         className="form-control d-flex align-items-center justify-content-between"
@@ -159,7 +185,6 @@ const EmployeeFilterDropdown = ({
         <ChevronDown size={18} className="text-muted" />
       </button>
 
-      {/* DROPDOWN PANEL */}
       {open && (
         <div
           className="border rounded shadow-sm mt-1"
@@ -171,9 +196,7 @@ const EmployeeFilterDropdown = ({
           }}
           onClick={(e) => e.stopPropagation()}
         >
-          {/* search row */}
           <div className="p-2 border-bottom">
-
             <div className="d-flex flex-wrap gap-2 justify-content-between align-items-center">
               <div style={{ minWidth: "240px", flex: 1, position: "relative" }}>
                 <Search
@@ -220,10 +243,8 @@ const EmployeeFilterDropdown = ({
                 All employees
               </label>
             </div>
-
           </div>
 
-          {/* list (max height -> ~4-6 rows + scroll) */}
           <div style={{ maxHeight: 220, overflowY: "auto" }} className="p-2">
             {filtered.map((e) => {
               const checked = selectedIds.has(e.id);
@@ -268,6 +289,8 @@ const EmployeeFilterDropdown = ({
 };
 
 const AdminShiftsCalendar = () => {
+  const isMobile = useIsMobile(768);
+
   const [employees, setEmployees] = useState([]);
   const [search, setSearch] = useState("");
   const [selectedIds, setSelectedIds] = useState(new Set());
@@ -332,9 +355,9 @@ const AdminShiftsCalendar = () => {
     }
   }, [assignPartiallySelected]);
 
-    useEffect(() => {
-      loadEmployeesAndShifts();
-    }, []);
+  useEffect(() => {
+    loadEmployeesAndShifts();
+  }, []);
 
   const loadEmployeesAndShifts = async () => {
     try {
@@ -417,7 +440,6 @@ const AdminShiftsCalendar = () => {
     setEndDate(toDateStr(e));
     setEndTime(toTimeStr(e));
 
-    // default assign = left filter selection
     setAssignIds(new Set(selectedIds));
 
     setModalOpen(true);
@@ -449,7 +471,6 @@ const AdminShiftsCalendar = () => {
       setEndTime(toTimeStr(e));
     }
 
-    // edit = single employee
     setAssignIds(new Set([empId]));
     setModalOpen(true);
   };
@@ -504,8 +525,18 @@ const AdminShiftsCalendar = () => {
       valid = false;
     }
 
+    // format validation (important for mobile typing)
+    if (startDate && startTime && (!isValidDateStr(startDate) || !isValidTimeStr(startTime))) {
+      errorsCopy.start = "Use format YYYY-MM-DD and HH:MM";
+      valid = false;
+    }
 
-    if (startDate && startTime && endDate && endTime) {
+    if (endDate && endTime && (!isValidDateStr(endDate) || !isValidTimeStr(endTime))) {
+      errorsCopy.end = "Use format YYYY-MM-DD and HH:MM";
+      valid = false;
+    }
+
+    if (startDate && startTime && endDate && endTime && isValidDateStr(startDate) && isValidTimeStr(startTime) && isValidDateStr(endDate) && isValidTimeStr(endTime)) {
       const s = buildLocalDateFromParts(startDate, startTime);
       const e = buildLocalDateFromParts(endDate, endTime);
 
@@ -513,13 +544,11 @@ const AdminShiftsCalendar = () => {
         errorsCopy.end = "End must be after Start";
         valid = false;
       } else {
-        // work window validation
         if (!isWithinWorkWindow(s, e)) {
           errorsCopy.start = "Start/End must be within 06:00-22:00";
           errorsCopy.end = "Start/End must be within 06:00-22:00";
           valid = false;
         }
-        // max duration validation
         if (!isMaxHoursOk(s, e)) {
           errorsCopy.end = `Shift cannot exceed ${MAX_SHIFT_HOURS} hours`;
           valid = false;
@@ -528,7 +557,7 @@ const AdminShiftsCalendar = () => {
     }
 
     // overlap rule
-    if (startDate && startTime && endDate && endTime) {
+    if (startDate && startTime && endDate && endTime && isValidDateStr(startDate) && isValidTimeStr(startTime) && isValidDateStr(endDate) && isValidTimeStr(endTime)) {
       const s = buildLocalDateFromParts(startDate, startTime);
       const e = buildLocalDateFromParts(endDate, endTime);
 
@@ -567,7 +596,6 @@ const AdminShiftsCalendar = () => {
   };
 
   const save = async () => {
-
     if (!validateForm()) return;
 
     try {
@@ -753,7 +781,7 @@ const AdminShiftsCalendar = () => {
     return (
       <div
         style={{
-          fontSize: 9.5,         
+          fontSize: 9.5,
           lineHeight: 1.5,
           padding: "2px 3px",
           overflow: "hidden"
@@ -823,7 +851,6 @@ const AdminShiftsCalendar = () => {
               eventClick={openEditModalFromEvent}
               eventDrop={updateShiftFromCalendar}
               eventResize={updateShiftFromCalendar}
-
               height="100%"
               slotMinTime={WORK_MIN_TIME}
               slotMaxTime={WORK_MAX_TIME}
@@ -832,7 +859,6 @@ const AdminShiftsCalendar = () => {
               allDaySlot={false}
               expandRows={false}
               contentHeight="100%"
-
               longPressDelay={250}
               selectLongPressDelay={250}
               eventLongPressDelay={250}
@@ -889,6 +915,7 @@ const AdminShiftsCalendar = () => {
                   <h4 className="m-0">{mode === "EDIT" ? "Edit Shift" : "New Shift"}</h4>
                   <div className="text-muted" style={{ fontSize: 13 }}>
                     Allowed: 06:00–22:00 · Max duration: 8 hours
+                    {isMobile ? " · Mobile: type date/time" : ""}
                   </div>
                 </div>
 
@@ -935,17 +962,23 @@ const AdminShiftsCalendar = () => {
 
                   <div className="d-flex gap-2">
                     <input
-                      type="date"
+                      type={isMobile ? "text" : "date"}
                       className={`form-control ${formErrors.start ? "is-invalid" : ""}`}
                       value={startDate}
-                      onChange={(e) => setStartDate(e.target.value)}
+                      onChange={(e) => setStartDate(isMobile ? normalizeDateInput(e.target.value) : e.target.value)}
+                      inputMode={isMobile ? "numeric" : undefined}
+                      placeholder={isMobile ? "YYYY-MM-DD" : undefined}
+                      pattern={isMobile ? "\\d{4}-\\d{2}-\\d{2}" : undefined}
                     />
                     <input
-                      type="time"
+                      type={isMobile ? "text" : "time"}
                       className={`form-control ${formErrors.start ? "is-invalid" : ""}`}
                       value={startTime}
-                      onChange={(e) => setStartTime(e.target.value)}
-                      step="900"
+                      onChange={(e) => setStartTime(isMobile ? smartTime(e.target.value) : e.target.value)}
+                      inputMode={isMobile ? "numeric" : undefined}
+                      placeholder={isMobile ? "HH:MM" : undefined}
+                      pattern={isMobile ? "([01]\\d|2[0-3]):[0-5]\\d" : undefined}
+                      step={isMobile ? undefined : "900"}
                       style={{ maxWidth: 180 }}
                     />
                   </div>
@@ -963,17 +996,23 @@ const AdminShiftsCalendar = () => {
 
                   <div className="d-flex gap-2">
                     <input
-                      type="date"
+                      type={isMobile ? "text" : "date"}
                       className={`form-control ${formErrors.end ? "is-invalid" : ""}`}
                       value={endDate}
-                      onChange={(e) => setEndDate(e.target.value)}
+                      onChange={(e) => setEndDate(isMobile ? normalizeDateInput(e.target.value) : e.target.value)}
+                      inputMode={isMobile ? "numeric" : undefined}
+                      placeholder={isMobile ? "YYYY-MM-DD" : undefined}
+                      pattern={isMobile ? "\\d{4}-\\d{2}-\\d{2}" : undefined}
                     />
                     <input
-                      type="time"
+                      type={isMobile ? "text" : "time"}
                       className={`form-control ${formErrors.end ? "is-invalid" : ""}`}
                       value={endTime}
-                      onChange={(e) => setEndTime(e.target.value)}
-                      step="900"
+                      onChange={(e) => setEndTime(isMobile ? smartTime(e.target.value) : e.target.value)}
+                      inputMode={isMobile ? "numeric" : undefined}
+                      placeholder={isMobile ? "HH:MM" : undefined}
+                      pattern={isMobile ? "([01]\\d|2[0-3]):[0-5]\\d" : undefined}
+                      step={isMobile ? undefined : "900"}
                       style={{ maxWidth: 180 }}
                     />
                   </div>
@@ -990,7 +1029,6 @@ const AdminShiftsCalendar = () => {
                     <label className="form-label">Assign employees: *</label>
 
                     <div style={{ position: "relative" }} className="mt-1">
-                      {/* ONE-LINE FIELD (same style as outside) */}
                       <button
                         type="button"
                         className={`form-control d-flex align-items-center justify-content-between ${
@@ -1016,10 +1054,10 @@ const AdminShiftsCalendar = () => {
                       </button>
 
                       {formErrors.employees && (
-                          <div className="invalid-feedback d-block">
-                            {formErrors.employees}
-                          </div>
-                        )}
+                        <div className="invalid-feedback d-block">
+                          {formErrors.employees}
+                        </div>
+                      )}
 
                       {assignOpen && (
                         <div
@@ -1032,7 +1070,6 @@ const AdminShiftsCalendar = () => {
                           }}
                           onClick={(e) => e.stopPropagation()}
                         >
-                          {/* SEARCH (same style) + MASTER CHECK */}
                           <div className="p-2 border-bottom">
                             <div className="d-flex flex-wrap gap-2 justify-content-between align-items-center">
                               <div style={{ minWidth: "240px", flex: 1, position: "relative" }}>
@@ -1057,7 +1094,6 @@ const AdminShiftsCalendar = () => {
                                 />
                               </div>
 
-                              {/* close icon */}
                               <button
                                 type="button"
                                 className="btn btn-link p-0"
@@ -1072,7 +1108,6 @@ const AdminShiftsCalendar = () => {
                               </button>
                             </div>
 
-                            {/* MASTER CHECKBOX */}
                             <div className="form-check mt-2">
                               <input
                                 ref={assignMasterRef}
@@ -1094,7 +1129,6 @@ const AdminShiftsCalendar = () => {
                             </div>
                           </div>
 
-                          {/* LIST */}
                           <div style={{ maxHeight: 220, overflowY: "auto" }} className="p-2">
                             {assignFilteredList.map((e) => (
                               <div
@@ -1163,9 +1197,9 @@ const AdminShiftsCalendar = () => {
           </div>
         </>
       )}
+
       {deleteModal.open && (
         <>
-          {/* Dark overlay */}
           <div
             style={{
               position: "fixed",
@@ -1177,7 +1211,6 @@ const AdminShiftsCalendar = () => {
             onClick={deleteModal.loading ? undefined : closeDeleteModal}
           />
 
-          {/* Centered modal */}
           <div
             style={{
               position: "fixed",

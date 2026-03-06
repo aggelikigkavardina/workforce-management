@@ -1,6 +1,5 @@
 import { NavLink, useNavigate } from "react-router-dom";
-import { useEffect, useRef, useState } from "react";
-import Collapse from "bootstrap/js/dist/collapse";
+import { useEffect, useState } from "react";
 import {
   isUserLoggedIn,
   logout,
@@ -14,41 +13,19 @@ const HeaderComponent = () => {
   const navigator = useNavigate();
   const loggedIn = isUserLoggedIn();
 
-  const collapseElRef = useRef(null);
-  const collapseInstanceRef = useRef(null);
-
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
-    const el = collapseElRef.current;
-    if (!el) return;
-
-    // Create once, do not auto-toggle
-    const instance = Collapse.getOrCreateInstance(el, { toggle: false });
-    collapseInstanceRef.current = instance;
-
-    const onShown = () => setIsOpen(true);
-    const onHidden = () => setIsOpen(false);
-
-    el.addEventListener("shown.bs.collapse", onShown);
-    el.addEventListener("hidden.bs.collapse", onHidden);
-
-    return () => {
-      el.removeEventListener("shown.bs.collapse", onShown);
-      el.removeEventListener("hidden.bs.collapse", onHidden);
-    };
-  }, []);
+    // whenever auth changes, force menu closed
+    setIsOpen(false);
+  }, [loggedIn]);
 
   const handleToggle = () => {
-    const instance = collapseInstanceRef.current;
-    if (!instance) return;
-    instance.toggle();
+    setIsOpen((prev) => !prev);
   };
 
   const closeNavbar = () => {
-    const instance = collapseInstanceRef.current;
-    if (!instance) return;
-    instance.hide();
+    setIsOpen(false);
   };
 
   const handleLogout = async () => {
@@ -56,9 +33,7 @@ const HeaderComponent = () => {
       await logoutAPICall();
     } catch (e) {}
 
-    // (optional) close dropdown on logout too
-    closeNavbar();
-
+    setIsOpen(false);
     logout();
     navigator("/");
   };
@@ -72,7 +47,7 @@ const HeaderComponent = () => {
   return (
     <header>
       <nav className="navbar navbar-expand-lg navbar-dark bg-dark px-3">
-        <NavLink className="navbar-brand" to={brandTarget}>
+        <NavLink className="navbar-brand" to={brandTarget} onClick={closeNavbar}>
           Workforce Management
         </NavLink>
 
@@ -90,7 +65,10 @@ const HeaderComponent = () => {
         )}
 
         {loggedIn && (
-          <div ref={collapseElRef} className="collapse navbar-collapse" id="navbarContent">
+          <div
+            id="navbarContent"
+            className={`navbar-collapse ${isOpen ? "show" : "collapse"} d-lg-flex`}
+          >
             <ul className="navbar-nav mb-2 mb-lg-0 position-lg-absolute start-lg-50 translate-middle-lg-x">
               {isAdminUser() && (
                 <>
@@ -138,9 +116,12 @@ const HeaderComponent = () => {
               )}
             </ul>
 
-            {/* Logout inside collapse (mobile: appears in dropdown, desktop: right side) */}
             <div className="ms-lg-auto mt-2 mt-lg-0">
-              <button className="btn btn-danger btn-sm" onClick={handleLogout} type="button">
+              <button
+                className="btn btn-danger btn-sm"
+                onClick={handleLogout}
+                type="button"
+              >
                 Logout
               </button>
             </div>
