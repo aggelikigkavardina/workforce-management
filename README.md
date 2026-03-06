@@ -1,116 +1,97 @@
 # Workforce Management
 
-## Running the Application with Docker
+Web application for employee and shift management with 
+messaging between admin and employees.
 
-### Overview
+## Tech Stack
 
-The application is fully containerized using Docker and orchestrated
-with Docker Compose.\
-It consists of the following services:
+-   Backend: Java, Spring Boot, Spring Security, JPA/Hibernate
+-   Frontend: React (Vite)
+-   Database: MySQL
+-   Authentication: JWT
+-   Logging: Logback
+-   Containerization: Docker, Docker Compose
 
--   MySQL 8 (Database)
--   Spring Boot (Java 17) Backend
--   React (Vite) Frontend served via Nginx
+## Features
 
-All services are defined in the `docker-compose.yml` file and
-communicate through an isolated Docker network.
+-   JWT authentication
+-   Role based access (Admin / Employee)
+-   Employee management: create / update / delete / reset password
+-   Shift management: create / update / delete shifts, employee calendar
+    view, validation rules
+-   Messaging system: conversations admin - employee, send messages,
+    unread count
+-   User profile: update profile, change password
+-   Logging of main actions (login, employee actions, shifts, messaging)
 
-------------------------------------------------------------------------
+## Local Run
 
-## Prerequisites
+Requirements - Java 17 - Maven - Node.js - MySQL
 
--   Docker Desktop (Windows/macOS) or Docker Engine (Linux)
--   Docker Compose (included in Docker Desktop)
+Create database CREATE DATABASE workforce_management;
 
-Verify installation:
-
-docker --version docker compose version
-
-------------------------------------------------------------------------
-
-## Build and Start the Application
-
-From the project root directory (where `docker-compose.yml` is located),
-execute:
-
-docker compose up -d --build
-
-This command:
-
--   Builds the backend Docker image
--   Builds the frontend Docker image
--   Pulls and initializes the MySQL 8 image
--   Creates the required Docker network and persistent volume
--   Starts all containers in detached mode
-
-------------------------------------------------------------------------
-
-## Accessing the Application
-
-After successful startup:
-
-Frontend: http://localhost:3000
-
-Backend API: http://localhost:8080
-
-MySQL (for external tools such as MySQL Workbench):
-
-Host: localhost\
-Port: 3307\
-Database: workforce\
-Username: workforce\
-Password: workforcepass
-
-------------------------------------------------------------------------
-
-## Stopping the Application
-
-To stop all running services:
-
-docker compose down
-
-To stop and remove the database volume (this deletes all stored data):
-
-docker compose down -v
-
-------------------------------------------------------------------------
-
-## Viewing Logs
-
-All services:
-
-docker compose logs -f
-
-Specific service:
-
-docker compose logs -f backend docker compose logs -f db docker compose
-logs -f frontend
-
-------------------------------------------------------------------------
-
-## Restarting a Service
+Configure backend src/main/resources/application.properties
 
 Example:
+spring.datasource.url=jdbc:mysql://localhost:3306/workforce_management
+spring.datasource.username=your_username
+spring.datasource.password=your_password
+spring.jpa.hibernate.ddl-auto=update server.port=8080
 
-docker compose restart backend
+Run backend mvn spring-boot:run
 
-------------------------------------------------------------------------
+Backend URL http://localhost:8080
 
-## Rebuilding a Specific Service
+Run frontend cd frontend npm install npm run dev
 
-Example:
+Frontend URL http://localhost:3000
 
-docker compose build backend docker compose up -d
+## Docker Run
 
-------------------------------------------------------------------------
+Requirements - Docker - Docker Compose
 
-## Architecture Notes
+Check installation docker --version docker compose version
 
--   The backend connects to MySQL using the internal Docker hostname
-    `db` on port `3306`.
--   The external port mapping `3307:3306` is intended only for
-    development access from the host machine.
--   Application configuration is injected via environment variables
-    defined in `docker-compose.yml`.
--   MySQL data is persisted using a Docker volume to ensure durability
-    between container restarts.
+Start application docker compose up -d --build
+
+Access services Frontend: http://localhost:3000, Backend API:http://localhost:8080
+
+Username: workforce Password: workforcepass
+
+Stop containers docker compose down
+
+Delete database data docker compose down -v
+
+Logs docker compose logs -f docker compose logs -f backend docker
+compose logs -f db docker compose logs -f frontend
+
+## Default Admin Account
+
+email: admin@gmail.com password: admin123
+
+## Basic Test Flow
+
+-   login as admin
+-   create employee
+-   logout
+-   login as employee
+-   change password
+-   admin creates shifts
+-   employee views shifts
+-   test messaging
+
+## Logging
+
+Application uses Logback. Main actions logged: - login attempts -
+employee create/update/delete - password changes - shift operations -
+messaging events
+
+Logs appear in backend console.
+
+## Project Structure
+
+controller service repository entity dto mapper security config
+
+## Author
+
+Workforce Management System implemented with Spring Boot and React.
